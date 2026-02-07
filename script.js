@@ -89,6 +89,41 @@ document.addEventListener('DOMContentLoaded', () => {
         "remembered": "thousand-yard stare > soft focus > subtle smile or frown > tilt head > lost in thought > return to present"
     };
 
+    // MOTIVATED CAMERA LOGIC (Object-Oriented)
+    // Links specific actions+objects to specific camera movements
+    const cameraMotivators = [
+        {
+            // "Looking at..." -> POV
+            regex: /look(?:ing|s)? (?:at|towards|up at|down at) (?:the |a |an )?(\w+(?: \w+)?)/i,
+            shot: "pov",
+            descTemplate: (obj) => `First-Person POV Shot. The camera puts us in the subject's eyes, looking directly at the ${obj}. Focus on ${obj}.`
+        },
+        {
+            // "Holding..." -> Insert/Close Up
+            regex: /hold(?:ing|s)? (?:the |a |an )?(\w+(?: \w+)?)/i,
+            shot: "closeup",
+            descTemplate: (obj) => `Extreme Close-Up (Insert Shot) of the ${obj}. Macro lens details on the texture of the ${obj} in the subject's hand.`
+        },
+        {
+            // "Talking to..." -> OTS
+            regex: /talk(?:ing|s)? (?:to|with) (?:the |a |an )?(\w+(?: \w+)?)/i,
+            shot: "ots",
+            descTemplate: (obj) => `Over-The-Shoulder (OTS) Shot. Camera framed behind the subject, focused on ${obj} who is listening/reacting.`
+        },
+        {
+            // "Punch/Hit..." -> Action Cam
+            regex: /(?:punch|hit|strike|attack)(?:ing|s|ed)? (?:the |a |an )?(\w+(?: \w+)?)/i,
+            shot: "pov",
+            descTemplate: (obj) => `Dynamic Action Camera (SnorriCam). Shaky handheld movement following the impact on ${obj}. Motion blur.`
+        },
+        {
+            // "Walking to..." -> Tracking
+            regex: /(?:walk|run|mov)(?:ing|s|ed)? (?:towards|to) (?:the |a |an )?(\w+(?: \w+)?)/i,
+            shot: "ews", // Using EWS slot for tracking often works well to show path
+            descTemplate: (obj) => `Tracking Shot. The camera follows the subject from behind as they move towards the ${obj}. Establishing the distance.`
+        }
+    ];
+
     // HIGGSFIELD 8 CORE SHOTS + NANO BANANA SPECS
     const cinematicShots = {
         "establishing": {
@@ -235,7 +270,7 @@ ${data.narrativeBeats ? `[Sequence]: ${data.narrativeBeats}.` : ''}
 [Details]: ${data.visuals}.
 [Environment]: ${data.env}.
 [Style]: ${data.lighting}, ${data.camera.desc || data.camera}. 
---motion_bucket 8 --style_preset cinematic --no ${data.negativeConstraints}
+--motion_bucket ${data.motionBucket} --style_preset cinematic --no ${data.negativeConstraints}
             `
         }
     };
@@ -280,19 +315,44 @@ ${data.narrativeBeats ? `[Sequence]: ${data.narrativeBeats}.` : ''}
         if (lower.match(/mysterious|secret|witch|magic/)) { mood = "mysterious"; filmStock = techSpecs.stocks["noir"]; }
         if (lower.match(/fight|run|chase|action|cyber/)) { mood = "tense"; filmStock = techSpecs.stocks["scifi"]; }
 
-        // 3. DETECT CAMERA & LENS
+        // 3. DETECT CAMERA & LENS (MOTIVATED)
         let camera = cinematicShots["establishing"]; // Default
         let lensMatch = techSpecs.lenses["wide"];
+        let cameraMotivated = false;
 
-        for (const key in cinematicShots) {
-            const shot = cinematicShots[key];
-            if (shot.trigger.some(trigger => lower.includes(trigger))) {
-                camera = shot;
-                // Match lens to shot type
-                if (key === 'close_up' || key === 'emotion') lensMatch = techSpecs.lenses["portrait"];
-                if (key === 'pov' || key === 'dutch') lensMatch = techSpecs.lenses["wide"];
-                if (key === 'ots') lensMatch = techSpecs.lenses["portrait"];
-                break;
+        // A. Priority: Check Motivated Camera Logic (Object-Oriented)
+        for (const motivator of cameraMotivators) {
+            const match = text.match(motivator.regex);
+            if (match) {
+                // Determine Object
+                const obj = match[1];
+                camera = {
+                    name: cinematicShots[motivator.shot].name + ` [Focus: ${obj}]`,
+                    desc: motivator.descTemplate(obj)
+                };
+
+                // Lens Logic
+                if (motivator.shot === 'closeup') lensMatch = techSpecs.lenses["macro"];
+                if (motivator.shot === 'ots') lensMatch = techSpecs.lenses["portrait"];
+                if (motivator.shot === 'pov') lensMatch = techSpecs.lenses["wide"];
+
+                cameraMotivated = true;
+                break; // Stop at first strong motivation
+            }
+        }
+
+        // B. Fallback: Keyword triggers if no specific motivation found
+        if (!cameraMotivated) {
+            for (const key in cinematicShots) {
+                const shot = cinematicShots[key];
+                if (shot.trigger.some(trigger => lower.includes(trigger))) {
+                    camera = shot;
+                    // Match lens to shot type
+                    if (key === 'close_up' || key === 'emotion') lensMatch = techSpecs.lenses["portrait"];
+                    if (key === 'pov' || key === 'dutch') lensMatch = techSpecs.lenses["wide"];
+                    if (key === 'ots') lensMatch = techSpecs.lenses["portrait"];
+                    break;
+                }
             }
         }
 
@@ -300,32 +360,51 @@ ${data.narrativeBeats ? `[Sequence]: ${data.narrativeBeats}.` : ''}
         let visualTags = [];
         let envTags = [];
         let actionBeats = []; // For implicit narrative expansion
+        let motionBucket = 5; // Default "Mid" motion
+        let audioIntensity = 0; // 0-10 scale for synesthesia
 
-        // Check for narrative verbs to expand
+        // A. Narrative Decoder
         for (const key in narrativeDecoder) {
-            // We use a regex word boundary check to ensure we match "met" but not "helmet"
             const regex = new RegExp(`\\b${key}\\b`, 'i');
             if (regex.test(lower)) {
                 actionBeats.push(narrativeDecoder[key]);
+                motionBucket += 2; // Implicit actions usually imply movement
             }
         }
 
+        // B. Visual Dictionary & Synesthesia
         for (const key in visualDictionary) {
             if (lower.includes(key)) {
                 if (key.match(/city|nature|messy|luxury|road|desert|arctic|cyberpunk|war/)) {
                     envTags.push(visualDictionary[key]);
                 } else {
-                    // Include ALL other dictionary matches (including emotions/actions like 'cry', 'complain')
                     visualTags.push(visualDictionary[key]);
                 }
+                // Intensity Logic
+                if (key.match(/run|fight|chase|argue|scream|storm|chaos/)) { motionBucket += 3; audioIntensity += 2; }
+                if (key.match(/sleep|wait|stand|sit|sad|tired|calm/)) { motionBucket -= 2; }
             }
         }
+
+        // C. Audio Synesthesia (Sound -> Visuals)
+        // If sound text exists (e.g. "loud explosion"), inject visual intensity without user asking
+        if (lower.match(/loud|scream|explosion|bang|crash|shout|thunder/)) {
+            visualTags.push("camera shake, high contrast, motion blur, debris in air");
+            motionBucket = 10; // Max motion
+        }
+        if (lower.match(/whisper|silence|quiet|soft|wind|hum/)) {
+            visualTags.push("slow motion, stillness, dust particles floating, soft focus");
+            motionBucket = 3; // Low motion
+        }
+
+        // Cap Motion Bucket (1-10)
+        motionBucket = Math.max(1, Math.min(10, motionBucket));
 
         let visuals = visualTags.length > 0 ? visualTags.join(", ") : "highly detailed cinematic appearance";
         let narrativeBeats = null;
 
         if (actionBeats.length > 0) {
-            // Store separately, don't just append to visuals
+            // Store separately
             narrativeBeats = actionBeats.join(" > ");
         }
 
@@ -360,7 +439,8 @@ ${data.narrativeBeats ? `[Sequence]: ${data.narrativeBeats}.` : ''}
             filmStock,
             lensMatch,
             negativeConstraints,
-            narrativeBeats
+            narrativeBeats,
+            motionBucket
         };
     }
 
@@ -442,6 +522,7 @@ ${data.narrativeBeats ? `[Sequence]: ${data.narrativeBeats}.` : ''}
     const jsonToggle = document.getElementById('json-toggle');
     const multiShotToggle = document.getElementById('multishot-toggle');
     const ratioBtns = document.querySelectorAll('.ratio-btn');
+    const clearBtn = document.getElementById('clear-btn');
 
     // Config
     const models = Object.keys(modelSpecs).map(k => ({ id: k, name: modelSpecs[k].name }));
@@ -463,6 +544,13 @@ ${data.narrativeBeats ? `[Sequence]: ${data.narrativeBeats}.` : ''}
             });
         }
         if (appContainer) appContainer.classList.add('boot-anim');
+
+        if (clearBtn) {
+            clearBtn.addEventListener('click', () => {
+                promptInput.value = '';
+                promptInput.focus();
+            });
+        }
     }
 
     init();
@@ -569,6 +657,7 @@ ${data.narrativeBeats ? `[Sequence]: ${data.narrativeBeats}.` : ''}
                                 }
 
                                 // If user already specified a camera in brackets [Crane Shot], trust it, otherwise use detected
+                                // For Motivated Camera using "Name [Focus: X]", we want to keep that whole string
                                 const cameraLabel = cleanAction.match(/^\[(.*?)\]/) ? '' : `[${analysis.camera.name}] `;
                                 const sequenceLabel = analysis.narrativeBeats ? ` (Sequence: ${analysis.narrativeBeats})` : '';
 
