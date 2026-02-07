@@ -202,7 +202,7 @@ Negative Prompt: ${data.negativeConstraints}.
             jsonType: 'veo_video',
             format: (data) => `
 (Cinematic, 8k, HDR)
-[SCENE]: ${data.action}
+[SCENE]: ${data.action} ${data.narrativeBeats ? `\n[SEQUENCE]: ${data.narrativeBeats}` : ''}
 [VISUALS]: ${data.visuals}
 [CONTEXT]: ${data.env}
 [LIGHTING]: ${data.lighting}
@@ -217,7 +217,7 @@ ${data.audio ? `[Audio: ${data.audio}]` : ''}
             jsonType: 'kling_video',
             format: (data) => `
 [Role: Cinematic Masterpiece]
-[Action]: ${data.action}
+[Action]: ${data.action} ${data.narrativeBeats ? `\n[Micro-Sequence]: ${data.narrativeBeats}` : ''}
 [Character Details]: ${data.visuals} in ${data.env}.
 [Atmosphere]: ${data.lighting}.
 [Camera]: ${data.camera.desc || data.camera}.
@@ -231,6 +231,7 @@ High fidelity, 4k.
             jsonType: 'runway_gen4',
             format: (data) => `
 ${data.action}
+${data.narrativeBeats ? `[Sequence]: ${data.narrativeBeats}.` : ''}
 [Details]: ${data.visuals}.
 [Environment]: ${data.env}.
 [Style]: ${data.lighting}, ${data.camera.desc || data.camera}. 
@@ -321,10 +322,13 @@ ${data.action}
         }
 
         let visuals = visualTags.length > 0 ? visualTags.join(", ") : "highly detailed cinematic appearance";
+        let narrativeBeats = null;
+
         if (actionBeats.length > 0) {
-            // Append decoded narrative beats to visuals for richer context
-            visuals += ". [Visual Sequence]: " + actionBeats.join(" | ");
+            // Store separately, don't just append to visuals
+            narrativeBeats = actionBeats.join(" > ");
         }
+
         const env = envTags.length > 0 ? envTags.join(", ") : "cinematic background with depth";
         const lighting = lightingMoods[mood] || lightingMoods["mysterious"];
 
@@ -332,8 +336,17 @@ ${data.action}
         const quoteMatch = text.match(/"([^"]+)"/);
         const audio = quoteMatch ? `Character speaks "${quoteMatch[1]}"` : null;
 
-        // 6. NEGATIVE CONSTRAINTS (Rule 7)
-        const negativeConstraints = "text, watermark, blurry, distorted, low quality, pixelated, cartoon, ugly faces, bad anatomy, cgi, 3d render";
+        // 6. NEGATIVE CONSTRAINTS (Rule 7) - Dynamic
+        let negativeConstraints = "text, watermark, blurry, distorted, low quality, pixelated, bad anatomy";
+
+        if (stylePreset === 'anime') {
+            negativeConstraints += ", photorealistic, 3d render, cgi, live action";
+        } else if (stylePreset === 'raw') {
+            negativeConstraints += ", cartoon, illustration, painting, drawing, anime, cgi, 3d render, smooth skin";
+        } else {
+            // Cinematic/Digital default
+            negativeConstraints += ", cartoon, ugly faces, cgi, 3d render, flat lighting";
+        }
 
         return {
             subject: name,
@@ -346,7 +359,8 @@ ${data.action}
             mood,
             filmStock,
             lensMatch,
-            negativeConstraints
+            negativeConstraints,
+            narrativeBeats
         };
     }
 
@@ -556,8 +570,9 @@ ${data.action}
 
                                 // If user already specified a camera in brackets [Crane Shot], trust it, otherwise use detected
                                 const cameraLabel = cleanAction.match(/^\[(.*?)\]/) ? '' : `[${analysis.camera.name}] `;
+                                const sequenceLabel = analysis.narrativeBeats ? ` (Sequence: ${analysis.narrativeBeats})` : '';
 
-                                combinedPrompt += `Shot ${i + 1}: ${cameraLabel}${cleanAction}. ${analysis.visuals}. \n`;
+                                combinedPrompt += `Shot ${i + 1}: ${cameraLabel}${cleanAction}.${sequenceLabel} ${analysis.visuals}. \n`;
                             });
 
                             const masterAnalysis = analyzeText(text); // Macro analysis for env/lighting
