@@ -724,13 +724,37 @@ textarea:focus {
 
 /* Mobile */
 @media (max-width: 900px) {
+    .navbar {
+        padding: 16px 24px;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .nav-links {
+        width: 100%;
+        justify-content: center;
+        gap: 20px;
+    }
+
     .workspace-grid {
         grid-template-columns: 1fr;
+        display: flex;
+        flex-direction: column;
     }
 
     .control-column {
         border-right: none;
         border-bottom: 1px solid var(--glass-border);
+        padding: 20px;
+        order: 1;
+        /* Controls first */
+    }
+
+    .output-column {
+        padding: 20px;
+        min-height: 400px;
+        order: 2;
+        /* Output second */
     }
 
     .hero-title {
@@ -739,5 +763,24 @@ textarea:focus {
 
     .three-col {
         grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .settings-stack {
+        gap: 12px;
+    }
+
+    .interface-header {
+        flex-direction: column;
+        gap: 12px;
+        align-items: flex-start;
+    }
+
+    .status-badge {
+        font-size: 0.7rem;
+        padding: 4px 10px;
+        align-self: flex-end;
+        margin-top: -35px;
+        /* Hack to align with tabs on mobile */
     }
 }
