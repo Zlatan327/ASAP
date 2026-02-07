@@ -33,7 +33,60 @@ document.addEventListener('DOMContentLoaded', () => {
         "desert": "endless golden dunes, heat haze shimmering, brutal sun, cracked earth, vast isolation",
         "arctic": "frozen tundra, jagged ice formations, swirling snow mist, pale blue atmosphere, sub-zero temperature",
         "cyberpunk": "neon-drenched alleyway, holographic advertisements, steam vents, rain-slicked metal, high-tech slum",
-        "war": "scorched battlefield, craters, smoke rising from ruins, gray ash filling the air, desaturated landscape"
+        "war": "scorched battlefield, craters, smoke rising from ruins, gray ash filling the air, desaturated landscape",
+
+        // ACTING & EMOTION (VISUAL TRANSLATION)
+        "complain": "agitated expression, furrowed brows, mouth moving rapidly, hands gesturing in frustration, tense body language",
+        "complains": "agitated expression, furrowed brows, mouth moving rapidly, hands gesturing in frustration, tense body language",
+        "argue": "shouting, tense posture, aggressive finger pointing, face red with anger, confrontation",
+        "cry": "tears streaming down cheeks, red puffy eyes, quivering lower lip, sobbing shoulders, wet face",
+        "crying": "tears streaming down cheeks, red puffy eyes, quivering lower lip, sobbing shoulders, wet face",
+        "laugh": "head thrown back, wide open mouth smile, crinkled eyes, shaking shoulders, joyful expression",
+        "laughing": "head thrown back, wide open mouth smile, crinkled eyes, shaking shoulders, joyful expression",
+        "scream": "mouth wide open, strained neck muscles, intense fear or rage expression, veins popping",
+        "whisper": "leaning close, hand cupping mouth, secretive expression, soft focus, private exchange",
+        "love": "soft expression, gentle eyes, warm lighting, affectionate body language, tender moment",
+        "tired": "heavy eyelids, dark circles, yawning, slumping posture, slow movements"
+    };
+
+    // NARRATIVE DECODER (IMPLICIT ACTION EXPANSION)
+    // Maps summary verbs to granular visual beats (Chronological Micro-Storytelling)
+    const narrativeDecoder = {
+        // TRAVEL & ARRIVAL
+        "arrive": "traveling shot > destination appears in distance > approaching structure > slowing down > stopping > looking up in awe",
+        "arrived": "traveling shot > destination appears in distance > approaching structure > slowing down > stopping > looking up in awe",
+        "leave": "turning away > walking into distance > figure becoming smaller > looking back once > disappearing over horizon",
+        "left": "turning away > walking into distance > figure becoming smaller > looking back once > disappearing over horizon",
+        "enter": "hand pushing door open > stepping across threshold > eyes adjusting to light > scanning the room > step forward",
+        "entered": "hand pushing door open > stepping across threshold > eyes adjusting to light > scanning the room > step forward",
+
+        // INTERACTION
+        "meet": "walking along path > notices someone ahead > slows pace > hesitant approach > making eye contact > greeting nod",
+        "met": "walking along path > notices someone ahead > slows pace > hesitant approach > making eye contact > greeting nod",
+        "talk": "leaning in > expressive hand gestures > nodding > reaction shot of listener > animated conversation",
+        "talked": "leaning in > expressive hand gestures > nodding > reaction shot of listener > animated conversation",
+        "argue": "sudden stop > sharp finger pointing > chest heaving > invading personal space > shouting > turning away in disgust",
+        "argued": "sudden stop > sharp finger pointing > chest heaving > invading personal space > shouting > turning away in disgust",
+
+        // DISCOVERY & SEARCH
+        "find": "scanning environment > eyes narrowing > crouching down > intense focus > brushing away dirt > eyes widening in realization > picking object up",
+        "found": "scanning environment > eyes narrowing > crouching down > intense focus > brushing away dirt > eyes widening in realization > picking object up",
+        "search": "looking left and right > moving objects aside > frantic pace > sweat on brow > desperation building > rapid head movements",
+        "searched": "looking left and right > moving objects aside > frantic pace > sweat on brow > desperation building > rapid head movements",
+
+        // CONFLICT & ACTION
+        "fight": "tense standoff > circling opponent > fists raised > sudden lunge > impact > recoil > heavy breathing",
+        "fought": "tense standoff > circling opponent > fists raised > sudden lunge > impact > recoil > heavy breathing",
+        "chase": "sprinting > looking back over shoulder > stumbling > scrambling up > heavy breathing > terrified expression > running harder",
+        "chased": "sprinting > looking back over shoulder > stumbling > scrambling up > heavy breathing > terrified expression > running harder",
+        "escape": "hiding in shadows > checking coast is clear > silent movement > sudden dash > bursting through exit > freedom",
+        "escaped": "hiding in shadows > checking coast is clear > silent movement > sudden dash > bursting through exit > freedom",
+
+        // EMOTION & REACTION
+        "realize": "sudden stillness > eyes widening > mouth slightly open > background dolly zoom > dawning comprehension",
+        "realized": "sudden stillness > eyes widening > mouth slightly open > background dolly zoom > dawning comprehension",
+        "remember": "thousand-yard stare > soft focus > subtle smile or frown > tilt head > lost in thought > return to present",
+        "remembered": "thousand-yard stare > soft focus > subtle smile or frown > tilt head > lost in thought > return to present"
     };
 
     // HIGGSFIELD 8 CORE SHOTS + NANO BANANA SPECS
@@ -242,21 +295,36 @@ ${data.action}
             }
         }
 
-        // 4. EXPAND VISUALS
+        // 4. EXPAND VISUALS & DECODE NARRATIVE
         let visualTags = [];
         let envTags = [];
+        let actionBeats = []; // For implicit narrative expansion
+
+        // Check for narrative verbs to expand
+        for (const key in narrativeDecoder) {
+            // We use a regex word boundary check to ensure we match "met" but not "helmet"
+            const regex = new RegExp(`\\b${key}\\b`, 'i');
+            if (regex.test(lower)) {
+                actionBeats.push(narrativeDecoder[key]);
+            }
+        }
 
         for (const key in visualDictionary) {
             if (lower.includes(key)) {
                 if (key.match(/city|nature|messy|luxury|road|desert|arctic|cyberpunk|war/)) {
                     envTags.push(visualDictionary[key]);
-                } else if (!['run', 'chase', 'cry', 'fight'].includes(key)) {
+                } else {
+                    // Include ALL other dictionary matches (including emotions/actions like 'cry', 'complain')
                     visualTags.push(visualDictionary[key]);
                 }
             }
         }
 
-        const visuals = visualTags.length > 0 ? visualTags.join(", ") : "highly detailed cinematic appearance";
+        let visuals = visualTags.length > 0 ? visualTags.join(", ") : "highly detailed cinematic appearance";
+        if (actionBeats.length > 0) {
+            // Append decoded narrative beats to visuals for richer context
+            visuals += ". [Visual Sequence]: " + actionBeats.join(" | ");
+        }
         const env = envTags.length > 0 ? envTags.join(", ") : "cinematic background with depth";
         const lighting = lightingMoods[mood] || lightingMoods["mysterious"];
 
