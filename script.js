@@ -480,7 +480,16 @@ ${data.action}
                             // 1. Build the Multi-Shot textual prompt
                             segments.forEach((seg, i) => {
                                 const analysis = analyzeText(seg);
-                                combinedPrompt += `Shot ${i + 1}: [${analysis.camera.name}] ${analysis.action}. ${analysis.visuals}. \n`;
+                                // Check if user already typed "Shot 1:" or "Shot 2:" to avoid double labeling
+                                let cleanAction = analysis.action;
+                                if (cleanAction.match(/^Shot \d+:/i)) {
+                                    cleanAction = cleanAction.replace(/^Shot \d+:\s*/i, '');
+                                }
+
+                                // If user already specified a camera in brackets [Crane Shot], trust it, otherwise use detected
+                                const cameraLabel = cleanAction.match(/^\[(.*?)\]/) ? '' : `[${analysis.camera.name}] `;
+
+                                combinedPrompt += `Shot ${i + 1}: ${cameraLabel}${cleanAction}. ${analysis.visuals}. \n`;
                             });
 
                             const masterAnalysis = analyzeText(text); // Macro analysis for env/lighting
