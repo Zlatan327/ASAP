@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASAP | AI Video Narrative Director</title>
+
+    <!-- Design System -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="auth-history-styles.css">
+    <link rel="stylesheet" href="account-popup.css">
+
+    <!-- SEO Meta -->
+    <meta name="description" content="Advanced AI Video Prompter for Google Veo, Sora, Kling, and Runway.">
+</head>
+
+<body>
+
+    <!-- Solar System Background -->
+    <div class="nebula-glow glow-amber"></div>
+    <div class="nebula-glow glow-crimson"></div>
+    <div class="stars"></div>
+
+    <!-- Account Popup Modal -->
+    <div id="account-popup" class="account-popup-overlay" onclick="closeAccountPopup(event)" style="display: none;">
+        <div class="account-popup shadow-lg">
+            <button class="close-popup-btn" onclick="closeAccountPopup()">×</button>
+            <div class="popup-header">
+                <div class="popup-user-info">
+                    <img id="popup-user-avatar" src="" alt="User" class="popup-avatar">
+                    <div class="popup-user-details">
+                        <span id="popup-user-greeting" class="popup-greeting">Hi!</span>
+                        <span id="popup-user-email" class="popup-email"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="popup-content">
+                <div class="popup-section">
+                    <h3>⚙️ Your Preferences</h3>
+                    <div class="pref-grid">
+                        <div class="pref-item">
+                            <span class="pref-label">Model</span>
+                            <span id="popup-pref-model" class="pref-value">Loading...</span>
+                        </div>
+                        <div class="pref-item">
+                            <span class="pref-label">Style</span>
+                            <span id="popup-pref-style" class="pref-value">Loading...</span>
+                        </div>
+                        <div class="pref-item">
+                            <span class="pref-label">Ratio</span>
+                            <span id="popup-pref-ratio" class="pref-value">Loading...</span>
+                        </div>
+                        <div class="pref-item">
+                            <span class="pref-label">API Key</span>
+                            <span id="popup-pref-api" class="pref-value">...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <button id="popup-signout-btn" class="popup-btn danger" onclick="signOut()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <polyline points="16 17 21 12 16 7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                    Sign Out
+                </button>
+            </div>
+
+            <div class="popup-footer">
+                <a href="#" class="popup-link">Privacy Policy</a>
+                <span class="popup-separator">•</span>
+                <a href="#" class="popup-link">Terms</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navbar -->
+    <nav class="navbar glass-panel">
+        <div class="brand-logo">
+            <svg width="24" height="24" viewBox="0 0 24 24" class="logo-svg">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none" />
+                <circle cx="12" cy="4" r="2" fill="currentColor" fill-opacity="0.8" />
+                <circle cx="20" cy="4" r="2" fill="currentColor" fill-opacity="0.8" />
+                <circle cx="4" cy="12" r="2" fill="currentColor" fill-opacity="0.8" />
+                <circle cx="12" cy="12" r="2" fill="currentColor" class="pulse-dot" />
+                <circle cx="20" cy="12" r="2" fill="currentColor" fill-opacity="0.8" />
+                <circle cx="4" cy="20" r="2" fill="currentColor" fill-opacity="0.8" />
+                <circle cx="12" cy="20" r="2" fill="currentColor" fill-opacity="0.8" />
+                <circle cx="20" cy="20" r="2" fill="currentColor" fill-opacity="0.8" />
+                <!-- Connection Line -->
+                <path d="M12 4L4 12L12 20L20 12L12 4Z" stroke="currentColor" stroke-width="0.5" stroke-opacity="0.3" />
+            </svg>
+            <span class="brand-text">ASAP</span>
+        </div>
+
+        <div class="nav-links">
+            <a href="#" class="nav-link">Home</a>
+            <a href="#guide-section" class="nav-link">Features & Models</a>
+            <a href="https://x.com/pen_artisan" target="_blank" rel="noopener noreferrer" class="nav-link icon-link"
+                aria-label="Contact on X">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                        d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                </svg>
+            </a>
+            <a href="#guide-section" class="nav-btn">Get Started</a>
+        </div>
+
+        <!-- Auth Section -->
+        <div class="auth-container">
+            <!-- User Profile (shown when signed in) -->
+            <div id="user-profile" class="user-profile" style="display: none;" onclick="toggleAccountPopup()">
+                <img id="user-avatar" class="user-avatar" alt="User avatar" />
+                <span id="user-name" class="user-name"></span>
+            </div>
+
+            <!-- Custom Sign-in Button (shown when signed out) -->
+            <button id="custom-signin-btn" class="custom-signin-btn">
+                <svg width="18" height="18" viewBox="0 0 48 48" fill="none">
+                    <path fill="#EA4335"
+                        d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
+                    <path fill="#4285F4"
+                        d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
+                    <path fill="#FBBC05"
+                        d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
+                    <path fill="#34A853"
+                        d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
+                </svg>
+                <span>Sign in with Google</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <h1 class="hero-title"><span class="text-gradient">Logic Core 4.0</span></h1>
+        <p class="hero-subtitle">The advanced prompt engineering engine for Google Veo, OpenAI Sora, Kling AI, and
+            Runway Gen-3 Alpha.</p>
+    </section>
+
+    <!-- Guide & Info -->
+    <section id="guide-section" class="info-section glass-panel">
+        <div class="section-header">
+            <h2 class="section-title">Model Intelligence</h2>
+            <p class="section-desc">ASAP automatically optimizes your prompt for each specific model's architecture.</p>
+        </div>
+
+        <div class="cards-grid">
+            <div class="info-card">
+                <div class="card-icon icon-amber">🎥</div>
+                <h3>Google Veo</h3>
+                <p class="model-desc">Best for <strong>Cinematic Storytelling</strong>. Generates native 1080p+ video
+                    with coherent camera movements and consistent characters.</p>
+                <div class="tag-row"><span class="tag">Narrative</span><span class="tag">Long-form</span></div>
+            </div>
+
+            <div class="info-card">
+                <div class="card-icon icon-crimson">🌌</div>
+                <h3>OpenAI Sora</h3>
+                <p class="model-desc">Best for <strong>Mainstream/Wide Appeal</strong>. High fidelity physics
+                    simulation and complex multi-character interactions.</p>
+                <div class="tag-row"><span class="tag">Physics</span><span class="tag">Photoreal</span></div>
+            </div>
+
+            <div class="info-card">
+                <div class="card-icon icon-amber">⚡</div>
+                <h3>Runway Gen-4</h3>
+                <p class="model-desc">Best for <strong>Commercial & Advertising</strong>. Precise control over motion
+                    tailored for marketing aesthetics.</p>
+                <div class="tag-row"><span class="tag">Ads</span><span class="tag">Motion Control</span></div>
+            </div>
+
+            <div class="info-card">
+                <div class="card-icon icon-kling">⚡</div>
+                <h3>Kling AI 1.6</h3>
+                <p class="model-desc"><strong>The Hottest Model</strong>. Unparalleled motion quality and 5s-3m
+                    generation. Best for high-action sequences.</p>
+                <div class="tag-row"><span class="tag">Action</span><span class="tag">Pro Motion</span></div>
+            </div>
+
+            <div class="info-card">
+                <div class="card-icon icon-purple">🔮</div>
+                <h3>Luma Dream Machine</h3>
+                <p class="model-desc">Best for <strong>Abstract & Dream Sequences</strong>. Fluid, morphing visuals
+                    perfect for music videos or surreal art.</p>
+                <div class="tag-row"><span class="tag">Abstract</span><span class="tag">Surreal</span></div>
+            </div>
+        </div>
+
+        <div class="guide-steps">
+            <h3>How to Start</h3>
+            <ol>
+                <li>Paste your <strong>Raw Script</strong> or story outline below.</li>
+                <li>Select your <strong>Target Model</strong> from the list above.</li>
+                <li>Click <strong>Process Request</strong> to generate optimized prompts instantly.</li>
+            </ol>
+            <div class="arrow-down">↓</div>
+        </div>
+    </section>
+
+    <!-- Main Floating Interface -->
+    <main class="floating-interface glass-panel">
+
+        <!-- Tab Navigation -->
+        <div class="interface-header">
+            <nav class="mode-tabs segmented-control">
+                <button class="mode-tab active" data-mode="video">Video Narrative</button>
+                <button class="mode-tab" data-mode="photo">Restoration</button>
+            </nav>
+            <div class="status-badge">
+                <span class="status-dot"></span>
+                <span class="status-text">System Online</span>
+            </div>
+        </div>
+
+        <div class="workspace-grid">
+
+            <!-- Left Column: Inputs & Controls -->
+            <section class="control-column">
+
+                <div class="input-container">
+                    <label for="prompt-input" class="ui-label" id="input-label">Input Data</label>
+                    <div class="textarea-wrapper">
+                        <textarea id="prompt-input" class="modern-textarea"
+                            placeholder="Describe your story here... (e.g. 'A cyberpunk detective investigates a neon alley...')"></textarea>
+                        <button id="clear-btn" class="clear-btn" title="Clear Input">×</button>
+                    </div>
+                </div>
+
+                <!-- Video Settings -->
+                <div id="video-settings" class="settings-stack">
+                    <div class="setting-row three-col">
+                        <div class="field-group">
+                            <label class="ui-label">Model</label>
+                            <select id="model-select" class="ui-select"></select>
+                        </div>
+                        <div class="field-group">
+                            <label class="ui-label">Ratio</label>
+                            <div class="ratio-toggles segmented-control small">
+                                <button class="ratio-btn active" data-ratio="16:9">16:9</button>
+                                <button class="ratio-btn" data-ratio="9:16">9:16</button>
+                                <button class="ratio-btn" data-ratio="1:1">1:1</button>
+                            </div>
+                        </div>
+                        <div class="field-group">
+                            <label class="ui-label">Mode</label>
+                            <div class="ratio-toggles segmented-control small">
+                                <button id="json-toggle" class="ratio-btn" title="Enable API/JSON Output">JSON</button>
+                                <button id="multishot-toggle" class="ratio-btn"
+                                    title="Generate as Single Continuous Shot with Cuts">CUTS</button>
+                            </div>
+                        </div>
+                        <div class="field-group">
+                            <label class="ui-label">Style</label>
+                            <select id="style-preset" class="ui-select">
+                                <option value="cinematic">Cinematic</option>
+                                <option value="anime">Anime</option>
+                                <option value="digital">Digital</option>
+                                <option value="raw">Realism</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Photo Settings (Hidden) -->
+                <div id="photo-settings" class="settings-stack hidden">
+                    <div class="setting-row three-col">
+                        <div class="field-group">
+                            <label class="ui-label">Task Type</label>
+                            <select id="task-select" class="ui-select">
+                                <option value="restore">Restore Old Photo</option>
+                                <option value="colorize">Colorize B&W</option>
+                                <option value="enhance">Enhance Details</option>
+                                <option value="upscale">Upscale Resolution</option>
+                                <option value="denoise">Denoise / Deblur</option>
+                            </select>
+                        </div>
+                        <div class="field-group">
+                            <label class="ui-label">Damage Level</label>
+                            <select id="damage-select" class="ui-select">
+                                <option value="light">Light Damage</option>
+                                <option value="moderate" selected>Moderate</option>
+                                <option value="heavy">Heavy Damage</option>
+                            </select>
+                        </div>
+                        <div class="field-group">
+                            <label class="ui-label">Output Quality</label>
+                            <select id="quality-select" class="ui-select">
+                                <option value="hd">HD (1080p)</option>
+                                <option value="4k" selected>4K Ultra</option>
+                                <option value="8k">8K Maximum</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- API Key Section (Discreet) -->
+                <div class="api-section">
+                    <div class="api-header" onclick="toggleApiKey()">
+                        <span class="api-label">Google Gemini API Key (Optional)</span>
+                        <span class="api-toggle-icon">▼</span>
+                    </div>
+                    <div id="api-input-container" class="api-input-wrapper hidden">
+                        <input type="password" id="apiKey" class="text-input" placeholder="Paste your API key here...">
+                    </div>
+                </div>
+
+                <button id="generate-btn" class="primary-btn glow-effect">
+                    <span class="btn-content">Process Request</span>
+                </button>
+
+            </section>
+
+            <!-- Right Column: Output Terminal -->
+            <section class="output-column">
+                <div class="terminal-window glass-panel">
+                    <div class="terminal-header">
+                        <span class="terminal-title">>_ SYSTEM OUTPUT</span>
+                        <div class="terminal-controls">
+                            <button id="copy-all-btn" class="control-btn">COPY ALL</button>
+                        </div>
+                    </div>
+                    <div id="terminal-output" class="terminal-body" data-placeholder="Ready for input..."></div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- Google Identity Services -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+    <!-- Model Optimization -->
+    <script src="model-profiles.js"></script>
+
+    <!-- Auth & History Scripts -->
+    <script src="auth.js"></script>
+    <script src="user-prefs.js"></script>
+    <script src="account-popup.js"></script>
+
+    <!-- Main Logic -->
+    <script src="script.js"></script>
+
+    <!-- Initialize Auth on page load -->
+    <script>
+        window.addEventListener('load', () => {
+            // Initialize Google Auth
+            if (typeof initializeGoogleAuth === 'function') {
+                initializeGoogleAuth();
+            }
+
+            // Initialize User Preferences
+            if (typeof initializePreferencesAutoSave === 'function') {
+                initializePreferencesAutoSave();
+            }
+        });
+    </script>
+
+</body>
+
+</html>
