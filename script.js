@@ -19,7 +19,6 @@ document.addEventListener('DOMContentLoaded', () => {
         "gambling": "piles of chips, green felt table, nervous twitch, desperate expression, high contrast lighting, risk-taking atmosphere",
         "mysterious": "shadowed face, hooded figure, silhouette against light, piercing eyes, long trench coat, unknown identity",
         "old woman": "deeply wrinkled face, silver hair in bun, wise eyes, shawl wrapped around shoulders, weathered hands, grandmotherly",
-        "pelz": "Character Reference: [Pelz]. Male, late 30s, gaunt face, stubble beard, disheveled hair, dark circles under eyes, wearing dirty grey t-shirt",
         "soldier": "Character Reference: [Soldier]. Male, 25 years old, square jaw, buzz cut, blue eyes, sweat and mud on face, dirty green fatigues",
         "enforcer": "Character Reference: [Enforcer]. 7ft tall robot, single glowing red eye slit, white carbon-fiber armor, battle damage on chest plate",
         "runner": "Character Reference: [Runner]. Female, 20s, neon blue bob hair, holographic visor over eyes, black techwear jacket, glowing tattoos on neck",
@@ -300,7 +299,6 @@ ${data.narrativeBeats ? `[Sequence]: ${data.narrativeBeats}.` : ''}
         // 1. EXTRACT SUBJECT
         let name = "The Protagonist";
         // Heuristic: matching specific dictionary keys first
-        if (lower.includes("pelz")) name = "Pelz (a man)";
         if (lower.includes("soldier")) name = "The Soldier";
         if (lower.includes("enforcer") || lower.includes("robot")) name = "The Enforcer";
         if (lower.includes("runner")) name = "The Runner";
