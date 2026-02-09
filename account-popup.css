@@ -1,24 +1,24 @@
 /* ===================================
-   ACCOUNT POPUP MODAL
+   SOLAR FLARE :: ACCOUNT POPUP
    =================================== */
 
-/* Overlay */
+/* Overlay - Deep Space Blur */
 .account-popup-overlay {
     position: fixed;
     top: 0;
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(0, 0, 0, 0.7);
-    backdrop-filter: blur(8px);
-    z-index: 1000;
+    background: rgba(5, 2, 1, 0.6);
+    backdrop-filter: blur(12px);
+    z-index: 2000;
     display: flex;
     align-items: center;
     justify-content: center;
-    animation: fadeIn 0.2s ease;
+    animation: overlayFadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-@keyframes fadeIn {
+@keyframes overlayFadeIn {
     from {
         opacity: 0;
     }
@@ -28,202 +28,236 @@
     }
 }
 
-/* Popup Container */
+/* Popup Container - Glass Panel */
 .account-popup {
-    width: 380px;
+    width: 400px;
     max-width: 90vw;
-    background: var(--bg-void);
-    border: 1px solid var(--solar-gold);
-    border-radius: 16px;
-    box-shadow: 0 12px 40px rgba(245, 158, 11, 0.3);
-    animation: slideIn 0.3s ease;
+    background: linear-gradient(165deg, rgba(20, 20, 20, 0.9) 0%, rgba(5, 2, 1, 0.95) 100%);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    box-shadow:
+        0 0 0 1px rgba(251, 191, 36, 0.1),
+        0 20px 50px rgba(0, 0, 0, 0.7),
+        0 0 100px rgba(245, 158, 11, 0.1);
+    /* Subtle Ambient Glow */
+    animation: popupSlideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    backdrop-filter: blur(20px);
     overflow: hidden;
+    position: relative;
 }
 
-@keyframes slideIn {
+/* Inner Glow Effect */
+.account-popup::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--solar-amber), transparent);
+    opacity: 0.5;
+}
+
+@keyframes popupSlideUp {
     from {
-        transform: translateY(-20px);
+        transform: translateY(40px) scale(0.95);
         opacity: 0;
     }
 
     to {
-        transform: translateY(0);
+        transform: translateY(0) scale(1);
         opacity: 1;
     }
 }
 
-/* Header */
+/* Header - User Profile */
 .popup-header {
+    position: relative;
+    padding: 32px 24px 24px;
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
     align-items: center;
-    padding: 20px 24px;
-    border-bottom: 1px solid var(--glass-border);
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.02), transparent);
+}
+
+.popup-user-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+}
+
+.popup-avatar {
+    width: 88px;
+    height: 88px;
+    border-radius: 50%;
+    border: 2px solid var(--solar-gold);
+    box-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.popup-avatar:hover {
+    transform: scale(1.05) rotate(3deg);
+    border-color: var(--solar-amber);
+}
+
+.popup-user-details {
+    text-align: center;
+}
+
+.popup-greeting {
+    display: block;
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-primary);
+    background: linear-gradient(135deg, #fff 0%, var(--text-secondary) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 4px;
+    letter-spacing: -0.5px;
 }
 
 .popup-email {
     font-size: 13px;
-    color: var(--text-secondary);
+    color: var(--text-muted);
     font-family: var(--font-mono);
+    letter-spacing: 0.5px;
 }
 
-.popup-close-btn {
+/* Close Button */
+.close-popup-btn {
+    position: absolute;
+    top: 16px;
+    right: 16px;
     width: 32px;
     height: 32px;
     background: transparent;
     border: none;
     color: var(--text-muted);
-    font-size: 28px;
+    font-size: 24px;
+    line-height: 1;
+    border-radius: 50%;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.2s;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 50%;
 }
 
-.popup-close-btn:hover {
-    background: var(--glass-highlight);
+.close-popup-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
     color: var(--text-primary);
+    transform: rotate(90deg);
 }
 
-/* User Info */
-.popup-user-info {
+/* Preferences Section - Data Grid */
+.popup-content {
     padding: 24px;
-    text-align: center;
 }
 
-.popup-avatar {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    border: 3px solid var(--solar-gold);
-    margin-bottom: 16px;
-}
-
-.popup-greeting {
-    font-size: 20px;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin: 0;
-}
-
-/* Preferences Section */
-.popup-section {
-    padding: 20px 24px;
-    border-top: 1px solid var(--glass-border);
-}
-
-.popup-section-title {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text-muted);
+.popup-section h3 {
+    font-size: 11px;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin: 0 0 16px 0;
+    letter-spacing: 1.5px;
+    color: var(--solar-gold);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    opacity: 0.8;
 }
 
-.popup-pref-item {
+.pref-grid {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 16px;
+    display: grid;
+    gap: 12px;
+}
+
+.pref-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px 0;
+    padding-bottom: 12px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.popup-pref-item:last-child {
+.pref-item:last-child {
+    padding-bottom: 0;
     border-bottom: none;
 }
 
-.popup-pref-label {
-    font-size: 14px;
+.pref-label {
+    font-size: 13px;
     color: var(--text-secondary);
 }
 
-.popup-pref-value {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--solar-amber);
+.pref-value {
     font-family: var(--font-mono);
-    display: flex;
-    align-items: center;
-    gap: 6px;
+    font-size: 13px;
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.05);
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.popup-api-status {
-    color: var(--solar-green, #10b981);
-    font-size: 10px;
-}
-
-/* Actions */
-.popup-actions {
-    padding: 20px 24px;
-    border-top: 1px solid var(--glass-border);
-}
-
-.popup-btn {
+/* Sign Out Button */
+.popup-btn.danger {
+    margin-top: 24px;
     width: 100%;
-    padding: 12px 16px;
-    font-size: 14px;
-    font-weight: 600;
-    border-radius: var(--radius-md);
+    padding: 14px;
+    background: rgba(220, 38, 38, 0.05);
+    /* Very subtle red tint */
+    border: 1px solid rgba(220, 38, 38, 0.2);
+    color: #ef4444;
+    font-family: var(--font-ui);
+    font-weight: 500;
+    border-radius: 12px;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
 }
 
-.popup-btn-signout {
-    background: transparent;
-    border: 1px solid var(--glass-border);
-    color: var(--text-muted);
+.popup-btn.danger:hover {
+    background: rgba(220, 38, 38, 0.15);
+    border-color: #ef4444;
+    box-shadow: 0 0 20px rgba(220, 38, 38, 0.2);
+    transform: translateY(-1px);
 }
 
-.popup-btn-signout:hover {
-    background: rgba(220, 38, 38, 0.1);
-    border-color: var(--solar-crimson);
-    color: var(--solar-crimson);
+.popup-btn.danger:active {
+    transform: translateY(0);
 }
 
 /* Footer */
 .popup-footer {
-    padding: 16px 24px;
+    padding: 16px;
     text-align: center;
-    font-size: 12px;
+    font-size: 11px;
     color: var(--text-muted);
     border-top: 1px solid var(--glass-border);
+    background: rgba(0, 0, 0, 0.2);
 }
 
 .popup-link {
     color: var(--text-muted);
     text-decoration: none;
-    transition: color 0.2s ease;
+    transition: color 0.2s;
 }
 
 .popup-link:hover {
-    color: var(--solar-gold);
+    color: var(--text-primary);
+    text-decoration: underline;
 }
 
 .popup-separator {
+    color: rgba(255, 255, 255, 0.1);
     margin: 0 8px;
-}
-
-/* Make user profile clickable */
-.user-profile {
-    cursor: pointer;
-    transition: opacity 0.2s ease;
-}
-
-.user-profile:hover {
-    opacity: 0.8;
-}
-
-/* Mobile Responsive */
-@media (max-width: 768px) {
-    .account-popup {
-        width: 100%;
-        max-width: 340px;
-    }
 }
