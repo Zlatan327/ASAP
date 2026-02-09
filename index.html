@@ -31,7 +31,6 @@
     <!-- Custom Styles -->
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="auth-history-styles.css">
-    <link rel="stylesheet" href="history-toggle.css">
 </head>
 
 <body class="theme-solar">
@@ -308,31 +307,6 @@
 
         </div>
     </main>
-
-    <!-- History Panel (hidden by default, shown when signed in) -->
-    <aside id="history-panel" class="history-panel">
-        <div class="history-header">
-            <h3>📜 Prompt History</h3>
-            <div class="history-controls">
-                <button onclick="exportHistory()" class="icon-btn" title="Export JSON">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                        <polyline points="7 10 12 15 17 10"></polyline>
-                        <line x1="12" y1="15" x2="12" y2="3"></line>
-                    </svg>
-                </button>
-                <button onclick="clearHistory()" class="icon-btn" title="Clear All">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="3 6 5 6 21 6"></polyline>
-                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                    </svg>
-                </button>
-            </div>
-        </div>
-        <div id="history-list" class="history-list">
-            <p class="empty-state">Sign in to view history</p>
-        </div>
-    </aside>
 
     <!-- Google Identity Services -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
