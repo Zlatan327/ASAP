@@ -464,10 +464,22 @@ ${data.narrativeBeats ? `[Sequence]: ${data.narrativeBeats}.` : ''}
         if (lower.match(/mysterious|secret|witch|magic/)) { mood = "mysterious"; filmStock = techSpecs.stocks["noir"]; }
         if (lower.match(/fight|run|chase|action|cyber/)) { mood = "tense"; filmStock = techSpecs.stocks["scifi"]; }
 
+        // [DIRECTOR'S TABLE] - COLORIST
+        const colorGrades = {
+            "cinematic": "Teal and Orange color theory, deep blacks, rich skin tones",
+            "sad": "Cool blue desaturated palette, muted tones, melancholic atmosphere",
+            "scary": "High contrast, crushed blacks, uneasy green tint, sickly palette",
+            "happy": "Warm golden hour hues, vibrant saturation, soft highlights",
+            "mysterious": "Silver moonlight tones, deep shadows, purple/blue accents",
+            "tense": "Bleach bypass look, gritty texture, high contrast"
+        };
+        const colorGrade = colorGrades[mood] || colorGrades["cinematic"];
+
         // 3. DETECT CAMERA & LENS (MOTIVATED)
         let camera = cinematicShots["establishing"]; // Default
         let lensMatch = techSpecs.lenses["wide"];
         let cameraMotivated = false;
+        let movementType = "smooth"; // Default motion [Director's Table - Action]
 
         // A. Priority: Check Motivated Camera Logic (Object-Oriented)
         for (const motivator of cameraMotivators) {
@@ -481,9 +493,9 @@ ${data.narrativeBeats ? `[Sequence]: ${data.narrativeBeats}.` : ''}
                 };
 
                 // Lens Logic
-                if (motivator.shot === 'closeup') lensMatch = techSpecs.lenses["macro"];
-                if (motivator.shot === 'ots') lensMatch = techSpecs.lenses["portrait"];
-                if (motivator.shot === 'pov') lensMatch = techSpecs.lenses["wide"];
+                if (motivator.shot === 'closeup') { lensMatch = techSpecs.lenses["macro"]; movementType = "static"; }
+                if (motivator.shot === 'ots') { lensMatch = techSpecs.lenses["portrait"]; movementType = "smooth"; }
+                if (motivator.shot === 'pov') { lensMatch = techSpecs.lenses["wide"]; movementType = "handheld"; }
 
                 cameraMotivated = true;
                 break; // Stop at first strong motivation
@@ -497,9 +509,10 @@ ${data.narrativeBeats ? `[Sequence]: ${data.narrativeBeats}.` : ''}
                 if (shot.trigger.some(trigger => lower.includes(trigger))) {
                     camera = shot;
                     // Match lens to shot type
-                    if (key === 'close_up' || key === 'emotion') lensMatch = techSpecs.lenses["portrait"];
-                    if (key === 'pov' || key === 'dutch') lensMatch = techSpecs.lenses["wide"];
-                    if (key === 'ots') lensMatch = techSpecs.lenses["portrait"];
+                    if (key === 'close_up' || key === 'emotion') { lensMatch = techSpecs.lenses["portrait"]; movementType = "static"; }
+                    if (key === 'pov' || key === 'dutch') { lensMatch = techSpecs.lenses["wide"]; movementType = "handheld"; }
+                    if (key === 'ots') { lensMatch = techSpecs.lenses["portrait"]; movementType = "smooth"; }
+                    if (key === 'crane') { movementType = "sweeping_crane"; }
                     break;
                 }
             }
@@ -511,6 +524,16 @@ ${data.narrativeBeats ? `[Sequence]: ${data.narrativeBeats}.` : ''}
         let actionBeats = []; // For implicit narrative expansion
         let motionBucket = 5; // Default "Mid" motion
         let audioIntensity = 0; // 0-10 scale for synesthesia
+
+        // [DIRECTOR'S TABLE] - ACTION DIRECTOR
+        const movementDescriptors = {
+            "static": "Tripod lock-off, zero camera shake",
+            "smooth": "Steadicam glide, fluid weightless motion",
+            "handheld": "Handheld organic shake, reactive framing, documentary style",
+            "sweeping_crane": "Epic gib-arm crane movement, flying sensation",
+            "chaotic": "SnorriCam rig, rapid whip pans, motion blur, intense energy"
+        };
+
 
         // A. Narrative Decoder
         for (const key in narrativeDecoder) {
@@ -524,13 +547,17 @@ ${data.narrativeBeats ? `[Sequence]: ${data.narrativeBeats}.` : ''}
         // B. Visual Dictionary & Synesthesia
         for (const key in visualDictionary) {
             if (lower.includes(key)) {
-                if (key.match(/city|nature|messy|luxury|road|desert|arctic|cyberpunk|war/)) {
+                if (lower.match(/city|nature|messy|luxury|road|desert|arctic|cyberpunk|war/)) {
                     envTags.push(visualDictionary[key]);
                 } else {
                     visualTags.push(visualDictionary[key]);
                 }
                 // Intensity Logic
-                if (key.match(/run|fight|chase|argue|scream|storm|chaos/)) { motionBucket += 3; audioIntensity += 2; }
+                if (key.match(/run|fight|chase|argue|scream|storm|chaos/)) {
+                    motionBucket += 3;
+                    audioIntensity += 2;
+                    movementType = "chaotic";
+                }
                 if (key.match(/sleep|wait|stand|sit|sad|tired|calm/)) { motionBucket -= 2; }
             }
         }
@@ -540,10 +567,12 @@ ${data.narrativeBeats ? `[Sequence]: ${data.narrativeBeats}.` : ''}
         if (lower.match(/loud|scream|explosion|bang|crash|shout|thunder/)) {
             visualTags.push("camera shake, high contrast, motion blur, debris in air");
             motionBucket = 10; // Max motion
+            movementType = "chaotic";
         }
         if (lower.match(/whisper|silence|quiet|soft|wind|hum/)) {
             visualTags.push("slow motion, stillness, dust particles floating, soft focus");
             motionBucket = 3; // Low motion
+            movementType = "smooth";
         }
 
         // Cap Motion Bucket (1-10)
@@ -558,7 +587,17 @@ ${data.narrativeBeats ? `[Sequence]: ${data.narrativeBeats}.` : ''}
         }
 
         const env = envTags.length > 0 ? envTags.join(", ") : "cinematic background with depth";
-        const lighting = lightingMoods[mood] || lightingMoods["mysterious"];
+
+        // [DIRECTOR'S TABLE] - SYNTHESIS
+        // Merge Color Grade into Lighting/Look
+        const lighting = (lightingMoods[mood] || lightingMoods["mysterious"]) + `. Color Grade: ${colorGrade}`;
+
+        // Merge Movement into Camera Desc
+        const movementDesc = movementDescriptors[movementType] || movementDescriptors["smooth"];
+        const cameraFinal = {
+            name: camera.name,
+            desc: `${camera.desc} Movement: ${movementDesc}.`
+        };
 
         // 5. AUDIO
         const quoteMatch = text.match(/"([^"]+)"/);
@@ -582,7 +621,7 @@ ${data.narrativeBeats ? `[Sequence]: ${data.narrativeBeats}.` : ''}
             action: amplifiedText,
             env,
             lighting,
-            camera,
+            camera: cameraFinal,
             audio,
             mood,
             filmStock,
@@ -593,32 +632,32 @@ ${data.narrativeBeats ? `[Sequence]: ${data.narrativeBeats}.` : ''}
         };
     }
 
-// Restoration Logic
-function optimizeRestoration(text) {
-    const lower = text.toLowerCase();
-    let task = "General Restoration";
-    let techniques = [];
-    let tools = [];
+    // Restoration Logic
+    function optimizeRestoration(text) {
+        const lower = text.toLowerCase();
+        let task = "General Restoration";
+        let techniques = [];
+        let tools = [];
 
-    // Detect Task
-    if (lower.includes("color")) { task = "Colorization"; techniques.push("authentic colorization", "natural skin tones", "period-accurate colors"); }
-    if (lower.includes("scratch") || lower.includes("tear")) { task = "Damage Repair"; techniques.push("scratch removal", "tear patching", "inpainting"); }
-    if (lower.includes("blur") || lower.includes("sharp")) { task = "Enhancement"; techniques.push("face restoration", "details sharpening", "deblurring"); }
-    if (lower.includes("face")) { techniques.push("GFPGAN face enhancement", "eye clarity", "skin texture recovery"); }
+        // Detect Task
+        if (lower.includes("color")) { task = "Colorization"; techniques.push("authentic colorization", "natural skin tones", "period-accurate colors"); }
+        if (lower.includes("scratch") || lower.includes("tear")) { task = "Damage Repair"; techniques.push("scratch removal", "tear patching", "inpainting"); }
+        if (lower.includes("blur") || lower.includes("sharp")) { task = "Enhancement"; techniques.push("face restoration", "details sharpening", "deblurring"); }
+        if (lower.includes("face")) { techniques.push("GFPGAN face enhancement", "eye clarity", "skin texture recovery"); }
 
-    // Default techniques if none
-    if (techniques.length === 0) techniques.push("noise reduction", "sharpness boost", "artifact removal", "resolution upscaling");
+        // Default techniques if none
+        if (techniques.length === 0) techniques.push("noise reduction", "sharpness boost", "artifact removal", "resolution upscaling");
 
-    // Construct Prompt
-    const prompt = `Task: ${task}\nInput: "${text}"\n\nDirectives:\n- Apply ${techniques.join(", ")}\n- Maintain original facial features and identity\n- Output high-fidelity restoration\n- Preserve authentic film grain texture if applicable`;
+        // Construct Prompt
+        const prompt = `Task: ${task}\nInput: "${text}"\n\nDirectives:\n- Apply ${techniques.join(", ")}\n- Maintain original facial features and identity\n- Output high-fidelity restoration\n- Preserve authentic film grain texture if applicable`;
 
-    return [{
-        id: 1,
-        label: `Restoration Protocol [${task}]`,
-        optimized: prompt,
-        raw: text
-    }];
-}
+        return [{
+            id: 1,
+            label: `Restoration Protocol [${task}]`,
+            optimized: prompt,
+            raw: text
+        }];
+    }
 
 
     function processScene(rawText, modelId, index, isJsonMode, seed) {
@@ -1153,4 +1192,3 @@ Example structure:
     }
 
 });
-
