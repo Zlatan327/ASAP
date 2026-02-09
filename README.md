@@ -18,6 +18,15 @@ ASAP is a futuristic, web-based prompt engineering interface designed to optimiz
 -   **Photo Restoration**: Dedicated mode for upscaling, colorizing, and restoring vintage photography.
 -   **Solar Flare Theme**: A premium, glassmorphism-based UI with deep void backgrounds and amber/crimson accents.
 
+## 🧠 Logic Core 5.0 (Visual Director)
+
+The engine now thinks like a film crew, not a text generator:
+1.  **Visual Translator**: Converts abstract concepts ("lazy", "angry") into concrete pixel-level descriptions ("slouched posture", "veins popping").
+2.  **Variable Isolation**: Prevents attribute bleeding by strictly scoping narratives to specific subjects using weighted syntax `(Subject:1.2)`.
+3.  **Scene Manager**: Enforces continuity by distinguishing between Global Context (Highway) and Local Context (Car Interior).
+4.  **Token Economy**: Automatically strips narrative fluff ("suddenly", "then") to prioritize visual tokens.
+5.  **Motion Dynamics**: Assigns camera movements (Steadicam vs. SnorriCam) based on action intensity.
+
 ## 🛠️ Usage
 
 1.  **Select Mode**: Toggle between "Video Narrative" and "Restoration".
