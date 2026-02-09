@@ -3,7 +3,147 @@
  * Includes: Cinematic Engine, Storyboard Mode, JSON Output, Creative Amplifier, Face Lock, Multi-Shot Cuts
  */
 
+
 document.addEventListener('DOMContentLoaded', () => {
+
+    // ==========================================
+    // 0. STORY ANALYSIS SKILL (Advanced NLP)
+    // ==========================================
+
+    // StoryState: Unified character/scene extraction
+    class StoryState {
+        constructor(rawStory) {
+            this.rawStory = rawStory;
+            this.characters = this.extractCharacters();
+            this.scenes = this.segmentScenes();
+            this.timeline = { timeOfDay: null, location: null };
+            this.genre = this.detectGenre();
+        }
+
+        extractCharacters() {
+            const namePattern = /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\b/g;
+            const matches = [...this.rawStory.matchAll(namePattern)];
+            const nameCounts = {};
+            matches.forEach(match => {
+                const name = match[1];
+                const stopWords = ['The', 'A', 'An', 'In', 'On', 'At', 'To', 'For', 'Of', 'By', 'With'];
+                if (!stopWords.includes(name)) {
+                    nameCounts[name] = (nameCounts[name] || 0) + 1;
+                }
+            });
+            return Object.entries(nameCounts)
+                .filter(([name, count]) => count > 1 || this.isLikelyCharacter(name))
+                .map(([name]) => name)
+                .slice(0, 5);
+        }
+
+        isLikelyCharacter(name) {
+            const characterContexts = [
+                new RegExp(`${name}\\s+(said|says|walks|runs|looks|enters|exits)`, 'i'),
+                new RegExp(`(Mr\\.|Mrs\\.|Dr\\.|Miss|Captain|Detective)\\s+${name}`, 'i')
+            ];
+            return characterContexts.some(pattern => pattern.test(this.rawStory));
+        }
+
+        segmentScenes() {
+            const transitions = {
+                temporal: /\b(then|next|after|later|soon|meanwhile|suddenly|now|finally|eventually)\b/gi,
+                spatial: /\b(enters|leaves|arrives|moves to|goes to|walks to|drives to)\b/gi
+            };
+            const sentences = this.rawStory.split(/[.!?]+/).filter(s => s.trim().length > 0);
+            const scenes = [];
+            let currentScene = [];
+
+            sentences.forEach((sentence) => {
+                const trimmed = sentence.trim();
+                const hasTemporalShift = transitions.temporal.test(trimmed) && trimmed.match(/later|after|meanwhile/i);
+                const hasSpatialShift = transitions.spatial.test(trimmed);
+                const shouldBreak = (hasTemporalShift || hasSpatialShift) && currentScene.length >= 2;
+
+                if (shouldBreak && currentScene.length > 0) {
+                    scenes.push(currentScene.join('. ') + '.');
+                    currentScene = [trimmed];
+                } else {
+                    currentScene.push(trimmed);
+                }
+            });
+
+            if (currentScene.length > 0) {
+                scenes.push(currentScene.join('. ') + '.');
+            }
+            return scenes.length > 0 ? scenes : [this.rawStory];
+        }
+
+        detectGenre() {
+            const genrePatterns = {
+                noir: /detective|crime|murder|shadow|rain|fog/i,
+                scifi: /robot|space|laser|cyber|neon|android/i,
+                western: /desert|cowboy|sheriff|saloon|horse/i,
+                horror: /blood|scream|dark|ghost|creature|terror/i,
+                action: /explosion|fight|chase|weapon|combat|battle/i
+            };
+            const scores = {};
+            for (const [genre, pattern] of Object.entries(genrePatterns)) {
+                const matches = this.rawStory.match(new RegExp(pattern, 'gi')) || [];
+                scores[genre] = matches.length;
+            }
+            const topGenre = Object.entries(scores).sort((a, b) => b[1] - a[1])[0];
+            return topGenre[1] > 0 ? topGenre[0] : 'cinematic';
+        }
+    }
+
+    // ContinuityTracker: State persistence across scenes
+    class ContinuityTracker {
+        constructor() {
+            this.state = {
+                characters: {},
+                environment: { timeOfDay: null, weather: null, location: null },
+                objects: []
+            };
+        }
+
+        updateFromScene(sceneText) {
+            const lower = sceneText.toLowerCase();
+
+            // Time tracking
+            if (/\b(morning|dawn|sunrise)\b/.test(lower)) this.state.environment.timeOfDay = 'morning';
+            if (/\b(afternoon|midday)\b/.test(lower)) this.state.environment.timeOfDay = 'afternoon';
+            if (/\b(evening|dusk|sunset)\b/.test(lower)) this.state.environment.timeOfDay = 'evening';
+            if (/\b(night|midnight|darkness)\b/.test(lower)) this.state.environment.timeOfDay = 'night';
+
+            // Weather tracking
+            if (/\b(rain|raining)\b/.test(lower)) this.state.environment.weather = 'rain';
+            if (/\b(snow|snowing)\b/.test(lower)) this.state.environment.weather = 'snow';
+            if (/\b(fog|foggy)\b/.test(lower)) this.state.environment.weather = 'fog';
+
+            // Injury tracking
+            const injuryMatch = sceneText.match(/(\w+)\s+(?:cuts|cut|breaks|broke|wounds|wounded)/i);
+            if (injuryMatch) {
+                const char = injuryMatch[1];
+                if (!this.state.characters[char]) this.state.characters[char] = { injuries: [] };
+                this.state.characters[char].injuries.push('injured');
+            }
+        }
+
+        injectIntoPrompt(basePrompt) {
+            const notes = [];
+            if (this.state.environment.timeOfDay) notes.push(`Time: ${this.state.environment.timeOfDay}`);
+            if (this.state.environment.weather) notes.push(`Weather: ${this.state.environment.weather}`);
+            for (const [char, data] of Object.entries(this.state.characters)) {
+                if (data.injuries.length > 0) notes.push(`${char}: ${data.injuries.join(', ')}`);
+            }
+            return notes.length > 0 ? `${basePrompt}\n\n[Continuity]: ${notes.join(' | ')}` : basePrompt;
+        }
+
+        reset() {
+            this.state = {
+                characters: {},
+                environment: { timeOfDay: null, weather: null, location: null },
+                objects: []
+            };
+        }
+    }
+
 
     // ==========================================
     // 1. CINEMATIC KNOWLEDGE BASE
@@ -296,12 +436,23 @@ ${data.narrativeBeats ? `[Sequence]: ${data.narrativeBeats}.` : ''}
             }
         }
 
-        // 1. EXTRACT SUBJECT
+        // 1. EXTRACT SUBJECT (Enhanced with NER)
         let name = "The Protagonist";
-        // Heuristic: matching specific dictionary keys first
-        if (lower.includes("soldier")) name = "The Soldier";
-        if (lower.includes("enforcer") || lower.includes("robot")) name = "The Enforcer";
-        if (lower.includes("runner")) name = "The Runner";
+
+        // Try to extract character from broader context if available
+        if (text.split(' ').length > 15) {
+            const quickState = new StoryState(text);
+            if (quickState.characters.length > 0) {
+                name = quickState.characters[0];
+            }
+        }
+
+        // Fallback: matching specific dictionary keys for known archetypes
+        if (name === "The Protagonist") {
+            if (lower.includes("soldier")) name = "The Soldier";
+            if (lower.includes("enforcer") || lower.includes("robot")) name = "The Enforcer";
+            if (lower.includes("runner")) name = "The Runner";
+        }
 
         // 2. DETECT MOOD & MATCH FILM STOCK
         let mood = "cinematic";
@@ -739,6 +890,14 @@ CONTEXT_DATA:
 - Aspect Ratio: ${ratio}
 - External References (Simulated): ${searchContext}
 
+VISUAL_LIBRARY:
+You have access to a rich Visual Dictionary for character archetypes and environments.
+Use these descriptors for consistency:
+${JSON.stringify(visualDictionary, null, 2).substring(0, 500)}... [truncated for brevity]
+
+CHARACTER_EXTRACTION_HINT:
+Look for capitalized proper nouns that appear multiple times or in character contexts (e.g., "Alex runs", "Dr. Martinez said").
+
 USER_STORY:
 "${userStory}"
 
@@ -837,9 +996,29 @@ Think step-by-step. First, analyze the story. Then generate the scene list. Fina
 
             } else {
                 // LEGACY FLOW
-                runLegacyLogic(text, sessionSeed);
             }
         });
+    }
+
+    // HELPER FUNCTIONS (Enhanced with Story Analysis Skill)
+    function splitIntoScenes(text) {
+        // Use StoryState for intelligent segmentation
+        const storyState = new StoryState(text);
+        return storyState.scenes;
+    }
+
+    function renderResult(res) {
+        const div = document.createElement('div');
+        div.className = 'prompt-block';
+        div.innerHTML = `
+        <div class="prompt-header">
+            <span class="prompt-id">#${res.id}</span>
+            <span class="prompt-label">${res.label}</span>
+            <button class="copy-btn" onclick="navigator.clipboard.writeText(this.parentElement.nextElementSibling.innerText)">COPY</button>
+        </div>
+        <div class="prompt-content" style="white-space: pre-wrap;">${res.optimized}</div>
+    `;
+        terminalOutput.appendChild(div);
     }
 
     function runLegacyLogic(text, sessionSeed) {
