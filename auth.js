@@ -3,9 +3,9 @@
  * Handles user sign-in/sign-out and profile management
  */
 
-// NOTE: Replace with your actual Google OAuth Client ID from:
+// Google OAuth Client ID from Google Cloud Console
 // https://console.cloud.google.com/apis/credentials
-const GOOGLE_CLIENT_ID = 'YOUR_CLIENT_ID.apps.googleusercontent.com';
+const GOOGLE_CLIENT_ID = '372043524088-h4pes4fdtsjs7cjtrfb4hfjf720q2p06.apps.googleusercontent.com';
 
 let currentUser = null;
 
