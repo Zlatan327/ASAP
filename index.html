@@ -73,7 +73,7 @@
                         </div>
                         <div class="pref-item">
                             <span class="pref-label">API Key</span>
-                            <span id="popup-pref-api" class="pref-value">...</span>
+                            <span id="popup-pref-api" class="pref-value status-badge">Not Set</span>
                         </div>
                     </div>
                 </div>
@@ -116,6 +116,13 @@
             <span class="brand-text">ASAP</span>
         </div>
 
+        <!-- Hamburger Button (Mobile) -->
+        <button class="hamburger-btn" id="mobile-menu-btn" aria-label="Toggle Menu">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" class="hamburger-icon">
+                <path d="M3 12h18M3 6h18M3 18h18" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            </svg>
+        </button>
+
         <div class="nav-links">
             <a href="#" class="nav-link">Home</a>
             <a href="#guide-section" class="nav-link">Features & Models</a>
@@ -127,9 +134,14 @@
                 </svg>
             </a>
             <a href="#guide-section" class="nav-btn">Get Started</a>
+
+            <!-- Mobile Auth Container inside Menu -->
+            <div class="mobile-auth-wrapper">
+                <!-- Will be populated/toggled via CSS -->
+            </div>
         </div>
 
-        <!-- Auth Section -->
+        <!-- Auth Section (Desktop) -->
         <div class="auth-container">
             <!-- User Profile (shown when signed in) -->
             <div id="user-profile" class="user-profile" style="display: none;" onclick="toggleAccountPopup()">
@@ -367,7 +379,7 @@
     <!-- Main Logic -->
     <script src="script.js"></script>
 
-    <!-- Initialize Auth on page load -->
+    <!-- Initialize Auth and Mobile Menu on page load -->
     <script>
         window.addEventListener('load', () => {
             // Initialize Google Auth
@@ -378,6 +390,33 @@
             // Initialize User Preferences
             if (typeof initializePreferencesAutoSave === 'function') {
                 initializePreferencesAutoSave();
+            }
+
+            // Mobile Menu Logic
+            const menuBtn = document.getElementById('mobile-menu-btn');
+            const navLinks = document.querySelector('.nav-links');
+
+            if (menuBtn && navLinks) {
+                menuBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    navLinks.classList.toggle('mobile-open');
+                });
+
+                // Close when clicking outside
+                document.addEventListener('click', (e) => {
+                    if (navLinks.classList.contains('mobile-open') &&
+                        !navLinks.contains(e.target) &&
+                        !menuBtn.contains(e.target)) {
+                        navLinks.classList.remove('mobile-open');
+                    }
+                });
+
+                // Close when link clicked
+                navLinks.querySelectorAll('a').forEach(link => {
+                    link.addEventListener('click', () => {
+                        navLinks.classList.remove('mobile-open');
+                    });
+                });
             }
         });
     </script>
