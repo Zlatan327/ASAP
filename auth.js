@@ -87,15 +87,25 @@ function showUserProfile(user) {
     const userProfile = document.getElementById('user-profile');
     const userAvatar = document.getElementById('user-avatar');
     const userName = document.getElementById('user-name');
+    const historyToggleBtn = document.getElementById('history-toggle-btn');
 
     if (customSigninBtn) customSigninBtn.style.display = 'none';
     if (userProfile) userProfile.style.display = 'flex';
     if (userAvatar) userAvatar.src = user.picture;
     if (userName) userName.textContent = user.name;
+    if (historyToggleBtn) historyToggleBtn.style.display = 'flex';
 
     // Show history panel
     const historyPanel = document.getElementById('history-panel');
     if (historyPanel) historyPanel.classList.add('visible');
+}
+
+// Toggle history panel
+function toggleHistory() {
+    const historyPanel = document.getElementById('history-panel');
+    if (historyPanel) {
+        historyPanel.classList.toggle('visible');
+    }
 }
 
 // Sign out
@@ -107,9 +117,11 @@ function signOut() {
     // Update UI
     const customSigninBtn = document.getElementById('custom-signin-btn');
     const userProfile = document.getElementById('user-profile');
+    const historyToggleBtn = document.getElementById('history-toggle-btn');
 
     if (customSigninBtn) customSigninBtn.style.display = 'block';
     if (userProfile) userProfile.style.display = 'none';
+    if (historyToggleBtn) historyToggleBtn.style.display = 'none';
 
     // Hide history panel
     const historyPanel = document.getElementById('history-panel');

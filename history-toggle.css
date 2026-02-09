@@ -1,0 +1,65 @@
+/* ===================================
+   HISTORY TOGGLE BUTTON
+   =================================== */
+
+.history-toggle-btn {
+    position: fixed;
+    top: 100px;
+    right: 24px;
+    width: 56px;
+    height: 56px;
+    display: none;
+    /* Hidden by default, shown when signed in */
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--solar-amber) 0%, var(--solar-gold) 100%);
+    border: 1px solid var(--solar-gold);
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+    transition: all 0.3s ease;
+    z-index: 99;
+}
+
+.history-toggle-btn:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(245, 158, 11, 0.4);
+}
+
+.history-toggle-btn svg {
+    color: var(--bg-void);
+    flex-shrink: 0;
+}
+
+.history-toggle-btn .badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--solar-crimson);
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    border-radius: 10px;
+    border: 2px solid var(--bg-void);
+}
+
+@media (max-width: 768px) {
+    .history-toggle-btn {
+        top: auto;
+        bottom: 24px;
+        right: 24px;
+        width: 48px;
+        height: 48px;
+    }
+
+    .history-toggle-btn svg {
+        width: 18px;
+        height: 18px;
+    }
+}

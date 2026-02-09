@@ -31,6 +31,7 @@
     <!-- Custom Styles -->
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="auth-history-styles.css">
+    <link rel="stylesheet" href="history-toggle.css">
 </head>
 
 <body class="theme-solar">
@@ -98,6 +99,16 @@
             </button>
         </div>
     </nav>
+
+    <!-- History Toggle Button (shown when signed in) -->
+    <button id="history-toggle-btn" class="history-toggle-btn" style="display: none;" onclick="toggleHistory()"
+        title="Toggle History">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+        </svg>
+        <span class="badge" id="history-count">0</span>
+    </button>
 
     <!-- Hero Section -->
     <header class="hero-section">
@@ -325,6 +336,9 @@
 
     <!-- Google Identity Services -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+    <!-- Model Optimization -->
+    <script src="model-profiles.js"></script>
 
     <!-- Auth & History Scripts -->
     <script src="auth.js"></script>
