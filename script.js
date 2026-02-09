@@ -198,7 +198,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         const weightedName = `(${name}:1.2)`;
 
-        // 2. DETECT MOOD
+        // 2. DETECT MOOD & STYLE
+        const styleManager = new window.StyleManager ? new window.StyleManager() : null;
+        const selectedStyle = document.getElementById('style-preset') ? document.getElementById('style-preset').value : 'cinematic';
+
+        // Get negatives from Style Manager
+        let negativeConstraints = styleManager ? styleManager.getNegatives(selectedStyle) : "text, watermark, blurry";
+
+        // Get Style Description (e.g. GTA 6 render)
+        const styleDesc = styleManager ? styleManager.getStyleDescription(selectedStyle) : "";
+
+        // Mood Logic (Keep existing mood detection for film stock, but strictly use styleDesc for visual look)
         let mood = "cinematic";
         let filmStock = techSpecs.stocks["natural"];
         if (lower.match(/sad|cry|tear/)) { mood = "sad"; filmStock = techSpecs.stocks["natural"]; }
@@ -206,7 +216,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (lower.match(/happy|joy/)) { mood = "happy"; filmStock = techSpecs.stocks["vintage"]; }
         if (lower.match(/cyber|future/)) { mood = "tense"; filmStock = techSpecs.stocks["scifi"]; }
 
-        // Colorist
+        // Colorist (Fallback if no specific style desc, otherwise append style desc)
         const colorGrades = {
             "cinematic": "Teal and Orange separation",
             "sad": "Cool blue desaturated palette",
@@ -214,7 +224,7 @@ document.addEventListener('DOMContentLoaded', () => {
             "happy": "Warm golden hour hues",
             "tense": "Bleach bypass look"
         };
-        const colorGrade = colorGrades[mood] || "Cinematic";
+        let lighting = styleDesc ? `Look: ${styleDesc}` : `Lighting: ${colorGrades[mood]}`;
 
         // 3. CAMERA
         let camera = cinematicShots["establishing"];
@@ -245,16 +255,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if (bridgeContext) context += ` ${bridgeContext}`;
         if (continuityNotes) context += ` ${continuityNotes}`;
 
-        // 5. NEGATIVE
-        let negativeConstraints = "text, watermark, blurry";
-
         const optimizedAction = optimizeTokens(concreteText);
 
         return {
             subject: weightedName,
             action: optimizedAction,
             env: context,
-            lighting: `Lighting: ${colorGrade}`,
+            lighting: lighting,
             camera: cameraFinal,
             mood,
             filmStock,
