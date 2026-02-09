@@ -16,6 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const cameraDirector = new window.CameraDirector ? new window.CameraDirector() : null;
     const detailInjector = new window.DetailInjector ? new window.DetailInjector() : null;
     const audioEngineer = new window.AudioEngineer ? new window.AudioEngineer() : null;
+    const sceneInferrer = new window.SceneInferrer ? new window.SceneInferrer() : null;
 
     // Legacy Support for Visual Dictionary (can be moved to a skill later)
     const visualDictionary = {
@@ -279,7 +280,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // 1. STORY STATE ANALYSIS
             const storyState = new window.StoryState(text);
-            const scenes = storyState.scenes; // Now returns objects { text, context, isMasterStart }
+
+            // SKILL: SCENE INFERRER
+            // If available, use it for smarter segmentation, otherwise fallback to StoryState
+            let scenes = [];
+            if (sceneInferrer) {
+                const inferred = sceneInferrer.segment(text);
+                // Map to format expected by processScene
+                scenes = inferred.map((s, idx) => ({
+                    text: s.text,
+                    context: s.slugline, // Use Slugline as the context (e.g. "INT. KITCHEN - DAY")
+                    isMasterStart: idx === 0 || s.location !== inferred[idx - 1]?.location
+                }));
+            } else {
+                scenes = storyState.scenes; // Fallback
+            }
 
             // 2. PROCESS SCENES
             scenes.forEach((scene, i) => {
