@@ -18,10 +18,14 @@ function initializeGoogleAuth() {
         showUserProfile(currentUser);
         loadHistory(); // Load history for the signed-in user
     } else {
-        // Ensure panel is hidden when not signed in
+        // Ensure panel is COMPLETELY hidden when not signed in
         const historyPanel = document.getElementById('history-panel');
+        const historyToggle = document.getElementById('history-toggle-btn');
         if (historyPanel) {
-            historyPanel.classList.remove('visible');
+            historyPanel.style.display = 'none'; // Force hide with display
+        }
+        if (historyToggle) {
+            historyToggle.style.display = 'none';
         }
     }
 
@@ -104,7 +108,10 @@ function showUserProfile(user) {
 
     // Show history panel
     const historyPanel = document.getElementById('history-panel');
-    if (historyPanel) historyPanel.classList.add('visible');
+    if (historyPanel) {
+        historyPanel.style.display = 'block'; // Make visible first
+        setTimeout(() => historyPanel.classList.add('visible'), 10); // Then slide in
+    }
 }
 
 // Toggle history panel
@@ -132,8 +139,10 @@ function signOut() {
 
     // Hide history panel
     const historyPanel = document.getElementById('history-panel');
-    if (historyPanel) historyPanel.classList.remove('visible');
-
+    if (historyPanel) {
+        historyPanel.classList.remove('visible');
+        setTimeout(() => historyPanel.style.display = 'none', 300); // Hide after animation
+    }
     // Clear history display
     const historyList = document.getElementById('history-list');
     if (historyList) historyList.innerHTML = '<p class="empty-state">Sign in to view history</p>';
