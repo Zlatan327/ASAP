@@ -80,20 +80,7 @@ const MODEL_PROFILES = {
         technicalNotes: 'Unpredictable but unique. Creates one-of-a-kind visuals. Best for when you want something no other model can create.'
     },
 
-    'nano-storyboard': {
-        name: 'Nano Storyboard (Image)',
-        strengths: ['storyboarding', '3x3-grid', 'comic-book-panels', 'quick-visualization', 'multiple-angles'],
-        weaknesses: ['not-video', 'static-output'],
-        idealFor: ['pre-visualization', 'storyboards', 'comic-books', 'concept-art', 'shot-planning'],
-        avoidFor: ['final-video-output'],
-        promptGuidance: {
-            emphasize: ['panel-flow', 'composition', 'camera-angles', 'sequential-storytelling'],
-            deemphasize: ['motion', 'animation'],
-            keywords: ['storyboard', 'panel', 'composition', 'sequential', 'visual-flow'],
-            structurePreference: 'panel-breakdown'
-        },
-        technicalNotes: 'Static image output. 3x3 grid format. Perfect for planning before video generation.'
-    }
+
 };
 
 // Helper function to get optimization hints for Gemini
