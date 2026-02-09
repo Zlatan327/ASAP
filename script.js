@@ -884,6 +884,9 @@ Output:
                     text: `
 SYSTEM_INSTRUCTION: ${systemPrompt}
 
+MODEL_OPTIMIZATION_GUIDE:
+${typeof getModelOptimizationHints === 'function' ? getModelOptimizationHints(modelConfig.jsonType || 'veo3') : ''}
+
 CONTEXT_DATA:
 - Target Model: ${modelName}
 - Style Hint: ${stylePreset} (Apply ONLY if consistent with story)
@@ -902,8 +905,18 @@ USER_STORY:
 "${userStory}"
 
 INSTRUCTIONS:
-Think step-by-step. First, analyze the story. Then generate the scene list. Finally, output the valid JSON array.
-`
+1. Analyze the story and extract scenes using the StoryState logic (semantic segmentation, NER).
+2. For EACH scene, generate a prompt optimized for ${modelName}.
+3. **CRITICAL**: Tailor prompts to this model's STRENGTHS and AVOID its WEAKNESSES (see MODEL_OPTIMIZATION_GUIDE above).
+4. Return ONLY valid JSON array of objects.
+5. Each object: {"scene": "brief description", "prompt": "optimized prompt for ${modelName}"}
+
+Example structure:
+[
+  {"scene": "Opening shot", "prompt": "..."},
+  {"scene": "Character introduction", "prompt": "..."}
+]
+                    `
                 }]
             }]
         };
