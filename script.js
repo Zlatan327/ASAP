@@ -279,6 +279,10 @@ document.addEventListener('DOMContentLoaded', () => {
         'runway-gen4': {
             name: 'RUNWAY_GEN_4', type: 'video',
             format: (data) => `${data.action} [Details]: ${data.subject} in ${data.env}. [Style]: ${data.lighting}, ${data.camera.desc}. --motion_bucket ${data.motionBucket}`
+        },
+        'seedance-pro': {
+            name: 'SEEDANCE_1.5_PRO', type: 'video',
+            format: (data) => `[Motion]: ${data.action}. [Camera]: ${data.camera.desc}. [Subject]: ${data.subject} in ${data.env}. --smooth_motion true --FPS 24`
         }
     };
 
@@ -349,6 +353,31 @@ document.addEventListener('DOMContentLoaded', () => {
                 div.className = 'prompt-block';
                 div.innerHTML = `<div class="prompt-header"><span class="prompt-id">#${res.id}</span><span class="prompt-label">${res.label}</span></div><div class="prompt-content">${res.optimized}</div>`;
                 terminalOutput.appendChild(div);
+            });
+        });
+    }
+
+    // UI INIT - TABS
+    const modeTabs = document.querySelectorAll('.mode-tab');
+    const videoSettings = document.getElementById('video-settings');
+    const photoSettings = document.getElementById('photo-settings');
+
+    if (modeTabs) {
+        modeTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Clear active state
+                modeTabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+
+                // Toggle settings visibility
+                const mode = tab.dataset.mode;
+                if (mode === 'video') {
+                    if (videoSettings) videoSettings.classList.remove('hidden');
+                    if (photoSettings) photoSettings.classList.add('hidden');
+                } else if (mode === 'photo') {
+                    if (videoSettings) videoSettings.classList.add('hidden');
+                    if (photoSettings) photoSettings.classList.remove('hidden');
+                }
             });
         });
     }
