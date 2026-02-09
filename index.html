@@ -246,33 +246,6 @@
             <!-- Left Column: Inputs & Controls -->
             <section class="control-column">
 
-                <div class="api-key-container">
-                    <details class="settings-details">
-                        <summary class="settings-summary">
-                            <span class="settings-icon">⚙️</span>
-                            <span>AI Settings</span>
-                            <div id="ai-status-indicator" class="ai-status hidden">
-                                <span class="status-dot active"></span>
-                            </div>
-                        </summary>
-                        <div class="settings-content">
-                            <label for="gemini-api-key" class="ui-label">Gemini API Key (Optional)</label>
-                            <div class="key-input-wrapper">
-                                <input type="password" id="gemini-api-key" class="modern-input"
-                                    placeholder="Paste key to unlock AI Agent...">
-                                <button id="toggle-key-visibility" class="icon-btn" title="Show/Hide">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                        stroke-width="2">
-                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                        <circle cx="12" cy="12" r="3"></circle>
-                                    </svg>
-                                </button>
-                            </div>
-                            <p class="settings-help">Leave empty to use Basic Regex Engine.</p>
-                        </div>
-                    </details>
-                </div>
-
                 <div class="input-container">
                     <label for="prompt-input" class="ui-label" id="input-label">Input Data</label>
                     <div class="textarea-wrapper">
@@ -399,12 +372,12 @@
         window.addEventListener('load', () => {
             // Initialize Google Auth
             if (typeof initializeGoogleAuth === 'function') {
-       tializeGoogleAuth();
+                initializeGoogleAuth();
             }
-            
+
             // Initialize User Preferences
             if (typeof initializePreferencesAutoSave === 'function') {
-                initializePrenceve();
+                initializePreferencesAutoSave();
             }
         });
     </script>
