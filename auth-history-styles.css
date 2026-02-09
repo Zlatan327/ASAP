@@ -93,6 +93,7 @@
 .history-panel {
     position: fixed;
     right: -400px;
+    /* Hidden off-screen by default */
     top: 0;
     width: 380px;
     height: 100vh;
@@ -107,6 +108,7 @@
 
 .history-panel.visible {
     right: 0;
+    /* Slide in when visible class is added */
 }
 
 .history-header {
