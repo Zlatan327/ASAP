@@ -17,6 +17,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const detailInjector = new window.DetailInjector ? new window.DetailInjector() : null;
     const audioEngineer = new window.AudioEngineer ? new window.AudioEngineer() : null;
     const sceneInferrer = new window.SceneInferrer ? new window.SceneInferrer() : null;
+    const continuityTracker = new window.ContinuityTracker ? new window.ContinuityTracker() : null;
+    const sceneBuilder = new window.SceneBuilder ? new window.SceneBuilder(continuityTracker) : null;
 
     // Legacy Support for Visual Dictionary (can be moved to a skill later)
     const visualDictionary = {
@@ -219,8 +221,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // ==========================================
 
     function processScene(sceneData, modelId, index) {
-        // sceneData is { text, context, isMasterStart }
-        const analysis = analyzeText(sceneData.text, sceneData.context);
+        // sceneData is { text, context, isMasterStart, bridge?, continuity? }
+
+        // Append Continuity/Bridge to the text for analysis
+        let fullText = sceneData.text;
+        if (sceneData.bridge) fullText += `\n${sceneData.bridge}`;
+        if (sceneData.continuity) fullText += `\n${sceneData.continuity}`;
+
+        const analysis = analyzeText(fullText, sceneData.context);
         const model = modelSpecs[modelId] || modelSpecs['veo3'];
 
         return {
@@ -292,6 +300,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     context: s.slugline, // Use Slugline as the context (e.g. "INT. KITCHEN - DAY")
                     isMasterStart: idx === 0 || s.location !== inferred[idx - 1]?.location
                 }));
+
+                // SKILL: SCENE BUILDER (Sequential Continuity)
+                // Enriches scenes with "Bridge" (action flow) and "Continuity" (state persistence)
+                if (sceneBuilder) {
+                    scenes = sceneBuilder.build(scenes);
+                }
             } else {
                 scenes = storyState.scenes; // Fallback
             }
