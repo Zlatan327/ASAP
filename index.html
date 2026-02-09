@@ -30,7 +30,7 @@
 
     <!-- Custom Styles -->
     <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="auth-history-styles.css">`r`n    <link rel="stylesheet" href="account-popup.css">`r`n    <link rel="stylesheet" href="restoration-mode.css">
+    <link rel="stylesheet" href="auth-history-styles.css">`r`n    <link rel="stylesheet" href="account-popup.css">
 </head>
 
 <body class="theme-solar">
@@ -106,7 +106,28 @@
             <polyline points="9 22 9 12 15 12 15 22"></polyline>
         </svg>
         <span class="badge" id="history-count">0</span>
-    </button>        <div class="cards-grid">
+    </button>
+
+    <!-- Hero Section -->
+    <header class="hero-section">
+        <h1 class="hero-title">
+            Accelerated Stories.<br>
+            <span class="text-gradient">Automated Prompts.</span>
+        </h1>
+        <p class="hero-subtitle">
+            ASAP (Automated Story & Art Prompter) intelligence that learns your style, optimizes for SORA & VEO,
+            and transforms raw ideas into cinematic reality in seconds.
+        </p>
+    </header>
+
+    <!-- Guide / Models Section -->
+    <section id="guide-section" class="info-section glass-panel">
+        <div class="section-header">
+            <h2 class="section-title">Model Intelligence Guide</h2>
+            <p class="section-desc">Select the right engine for your narrative style.</p>
+        </div>
+
+        <div class="cards-grid">
             <div class="info-card">
                 <div class="card-icon icon-amber">🎥</div>
                 <h3>Google Veo</h3>
@@ -341,7 +362,7 @@
     <script src="model-profiles.js"></script>
 
     <!-- Auth & History Scripts -->
-    <script src="auth.js"></script>`r`n    <script src="user-prefs.js"></script>`r`n    <script src="account-popup.js"></script>`r`n    <script src="restoration-mode.js"></script>
+    <script src="auth.js"></script>`r`n    <script src="user-prefs.js"></script>`r`n    <script src="account-popup.js"></script>
 
     <!-- Main Logic -->
     <script src="script.js"></script>
