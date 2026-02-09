@@ -593,6 +593,34 @@ ${data.narrativeBeats ? `[Sequence]: ${data.narrativeBeats}.` : ''}
         };
     }
 
+// Restoration Logic
+function optimizeRestoration(text) {
+    const lower = text.toLowerCase();
+    let task = "General Restoration";
+    let techniques = [];
+    let tools = [];
+
+    // Detect Task
+    if (lower.includes("color")) { task = "Colorization"; techniques.push("authentic colorization", "natural skin tones", "period-accurate colors"); }
+    if (lower.includes("scratch") || lower.includes("tear")) { task = "Damage Repair"; techniques.push("scratch removal", "tear patching", "inpainting"); }
+    if (lower.includes("blur") || lower.includes("sharp")) { task = "Enhancement"; techniques.push("face restoration", "details sharpening", "deblurring"); }
+    if (lower.includes("face")) { techniques.push("GFPGAN face enhancement", "eye clarity", "skin texture recovery"); }
+
+    // Default techniques if none
+    if (techniques.length === 0) techniques.push("noise reduction", "sharpness boost", "artifact removal", "resolution upscaling");
+
+    // Construct Prompt
+    const prompt = `Task: ${task}\nInput: "${text}"\n\nDirectives:\n- Apply ${techniques.join(", ")}\n- Maintain original facial features and identity\n- Output high-fidelity restoration\n- Preserve authentic film grain texture if applicable`;
+
+    return [{
+        id: 1,
+        label: `Restoration Protocol [${task}]`,
+        optimized: prompt,
+        raw: text
+    }];
+}
+
+
     function processScene(rawText, modelId, index, isJsonMode, seed) {
         const analysis = analyzeText(rawText);
         const model = modelSpecs[modelId] || modelSpecs['veo3'];
