@@ -69,7 +69,7 @@ function openAccountPopup() {
 // Close account popup
 function closeAccountPopup(event) {
     // Only close if clicking overlay directly (not its children)
-    if (event && event.target.classList.contains('account-popup')) {
+    if (event && !event.target.classList.contains('account-popup-overlay')) {
         return;
     }
 
