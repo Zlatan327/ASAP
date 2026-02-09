@@ -4,23 +4,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ASAP | AI Video Narrative Director</title>
+    <title>ASAP | AI Narrative Engine</title>
+    <meta name="description"
+        content="Accelerated Stories. Automated Prompts. An AI interface tailored for Kling, Veo, and Sora video generation.">
 
-    <!-- Design System -->
+    <!-- Open Graph / Social -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="ASAP | AI Narrative Engine">
+    <meta property="og:description"
+        content="Optimize your narratives for Kling, Veo, and Sora. Featuring Director Mode for auto-cinematography.">
+    <meta property="og:image" content="https://via.placeholder.com/1200x630/050201/f59e0b?text=ASAP+Engine">
+    <meta name="twitter:card" content="summary_large_image">
+
+    <!-- Favicon (SVG Data URI) -->
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
+
+
+    <!-- Fonts: Inter (UI) & JetBrains Mono (Data) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
         rel="stylesheet">
+
+    <!-- Custom Styles -->
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="auth-history-styles.css">
     <link rel="stylesheet" href="account-popup.css">
-
-    <!-- SEO Meta -->
-    <meta name="description" content="Advanced AI Video Prompter for Google Veo, Sora, Kling, and Runway.">
 </head>
 
-<body>
+<body class="theme-solar">
 
-    <!-- Solar System Background -->
+    <!-- Background Elements -->
     <div class="nebula-glow glow-amber"></div>
     <div class="nebula-glow glow-crimson"></div>
     <div class="stars"></div>
@@ -80,11 +96,12 @@
         </div>
     </div>
 
-    <!-- Navbar -->
-    <nav class="navbar glass-panel">
+    <!-- Navigation -->
+    <nav class="navbar">
         <div class="brand-logo">
-            <svg width="24" height="24" viewBox="0 0 24 24" class="logo-svg">
-                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none" />
+            <!-- 3x3 Dot Grid Logo -->
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" class="logo-svg">
+                <circle cx="4" cy="4" r="2" fill="currentColor" fill-opacity="0.8" />
                 <circle cx="12" cy="4" r="2" fill="currentColor" fill-opacity="0.8" />
                 <circle cx="20" cy="4" r="2" fill="currentColor" fill-opacity="0.8" />
                 <circle cx="4" cy="12" r="2" fill="currentColor" fill-opacity="0.8" />
@@ -138,17 +155,22 @@
     </nav>
 
     <!-- Hero Section -->
-    <section class="hero-section">
-        <h1 class="hero-title"><span class="text-gradient">Logic Core 4.0</span></h1>
-        <p class="hero-subtitle">The advanced prompt engineering engine for Google Veo, OpenAI Sora, Kling AI, and
-            Runway Gen-3 Alpha.</p>
-    </section>
+    <header class="hero-section">
+        <h1 class="hero-title">
+            Accelerated Stories.<br>
+            <span class="text-gradient">Automated Prompts.</span>
+        </h1>
+        <p class="hero-subtitle">
+            ASAP (Automated Story & Art Prompter) intelligence that learns your style, optimizes for SORA & VEO,
+            and transforms raw ideas into cinematic reality in seconds.
+        </p>
+    </header>
 
-    <!-- Guide & Info -->
+    <!-- Guide / Models Section -->
     <section id="guide-section" class="info-section glass-panel">
         <div class="section-header">
-            <h2 class="section-title">Model Intelligence</h2>
-            <p class="section-desc">ASAP automatically optimizes your prompt for each specific model's architecture.</p>
+            <h2 class="section-title">Model Intelligence Guide</h2>
+            <p class="section-desc">Select the right engine for your narrative style.</p>
         </div>
 
         <div class="cards-grid">
@@ -163,13 +185,13 @@
             <div class="info-card">
                 <div class="card-icon icon-crimson">🌌</div>
                 <h3>OpenAI Sora</h3>
-                <p class="model-desc">Best for <strong>Mainstream/Wide Appeal</strong>. High fidelity physics
-                    simulation and complex multi-character interactions.</p>
+                <p class="model-desc">Best for <strong>Mainstream/Wide Appeal</strong>. High fidelity physics simulation
+                    and complex multi-character interactions.</p>
                 <div class="tag-row"><span class="tag">Physics</span><span class="tag">Photoreal</span></div>
             </div>
 
             <div class="info-card">
-                <div class="card-icon icon-amber">⚡</div>
+                <div class="card-icon icon-gold">⚡</div>
                 <h3>Runway Gen-4</h3>
                 <p class="model-desc">Best for <strong>Commercial & Advertising</strong>. Precise control over motion
                     tailored for marketing aesthetics.</p>
@@ -179,13 +201,13 @@
             <div class="info-card">
                 <div class="card-icon icon-kling">⚡</div>
                 <h3>Kling AI 1.6</h3>
-                <p class="model-desc"><strong>The Hottest Model</strong>. Unparalleled motion quality and 5s-3m
+                <p class="model-desc"><strong>The Hottest Model.</strong> Unparalleled motion quality and 5s-3m
                     generation. Best for high-action sequences.</p>
                 <div class="tag-row"><span class="tag">Action</span><span class="tag">Pro Motion</span></div>
             </div>
 
             <div class="info-card">
-                <div class="card-icon icon-purple">🔮</div>
+                <div class="card-icon icon-amber">🔮</div>
                 <h3>Luma Dream Machine</h3>
                 <p class="model-desc">Best for <strong>Abstract & Dream Sequences</strong>. Fluid, morphing visuals
                     perfect for music videos or surreal art.</p>
@@ -223,6 +245,33 @@
 
             <!-- Left Column: Inputs & Controls -->
             <section class="control-column">
+
+                <div class="api-key-container">
+                    <details class="settings-details">
+                        <summary class="settings-summary">
+                            <span class="settings-icon">⚙️</span>
+                            <span>AI Settings</span>
+                            <div id="ai-status-indicator" class="ai-status hidden">
+                                <span class="status-dot active"></span>
+                            </div>
+                        </summary>
+                        <div class="settings-content">
+                            <label for="gemini-api-key" class="ui-label">Gemini API Key (Optional)</label>
+                            <div class="key-input-wrapper">
+                                <input type="password" id="gemini-api-key" class="modern-input"
+                                    placeholder="Paste key to unlock AI Agent...">
+                                <button id="toggle-key-visibility" class="icon-btn" title="Show/Hide">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                        <circle cx="12" cy="12" r="3"></circle>
+                                    </svg>
+                                </button>
+                            </div>
+                            <p class="settings-help">Leave empty to use Basic Regex Engine.</p>
+                        </div>
+                    </details>
+                </div>
 
                 <div class="input-container">
                     <label for="prompt-input" class="ui-label" id="input-label">Input Data</label>
@@ -272,61 +321,59 @@
                 <div id="photo-settings" class="settings-stack hidden">
                     <div class="setting-row three-col">
                         <div class="field-group">
-                            <label class="ui-label">Task Type</label>
-                            <select id="task-select" class="ui-select">
-                                <option value="restore">Restore Old Photo</option>
-                                <option value="colorize">Colorize B&W</option>
-                                <option value="enhance">Enhance Details</option>
-                                <option value="upscale">Upscale Resolution</option>
-                                <option value="denoise">Denoise / Deblur</option>
+                            <label class="ui-label">Task</label>
+                            <select id="restore-mode" class="ui-select">
+                                <option value="restore">Restore</option>
+                                <option value="colorize">Colorize</option>
+                                <option value="upscale">Upscale</option>
+                                <option value="denoise">Denoise</option>
                             </select>
                         </div>
                         <div class="field-group">
-                            <label class="ui-label">Damage Level</label>
-                            <select id="damage-select" class="ui-select">
-                                <option value="light">Light Damage</option>
-                                <option value="moderate" selected>Moderate</option>
-                                <option value="heavy">Heavy Damage</option>
+                            <label class="ui-label">Damage</label>
+                            <select id="damage-level" class="ui-select">
+                                <option value="light">Light</option>
+                                <option value="medium">Medium</option>
+                                <option value="heavy">Heavy</option>
                             </select>
                         </div>
                         <div class="field-group">
-                            <label class="ui-label">Output Quality</label>
-                            <select id="quality-select" class="ui-select">
-                                <option value="hd">HD (1080p)</option>
-                                <option value="4k" selected>4K Ultra</option>
-                                <option value="8k">8K Maximum</option>
-                            </select>
+                            <label class="ui-label">Quality</label>
+                            <div class="ratio-toggles segmented-control small">
+                                <button class="ratio-btn quality-btn active" data-q="hd">HD</button>
+                                <button class="ratio-btn quality-btn" data-q="4k">4K</button>
+                                <button class="ratio-btn quality-btn" data-q="8k">8K</button>
+                            </div>
                         </div>
-                    </div>
-                </div>
-
-                <!-- API Key Section (Discreet) -->
-                <div class="api-section">
-                    <div class="api-header" onclick="toggleApiKey()">
-                        <span class="api-label">Google Gemini API Key (Optional)</span>
-                        <span class="api-toggle-icon">▼</span>
-                    </div>
-                    <div id="api-input-container" class="api-input-wrapper hidden">
-                        <input type="password" id="apiKey" class="text-input" placeholder="Paste your API key here...">
                     </div>
                 </div>
 
                 <button id="generate-btn" class="primary-btn glow-effect">
                     <span class="btn-content">Process Request</span>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 12h14M12 5l7 7-7 7" />
+                    </svg>
                 </button>
 
             </section>
 
-            <!-- Right Column: Output Terminal -->
+            <!-- Right Column: Terminal Output -->
             <section class="output-column">
-                <div class="terminal-window glass-panel">
-                    <div class="terminal-header">
-                        <span class="terminal-title">>_ SYSTEM OUTPUT</span>
-                        <div class="terminal-controls">
-                            <button id="copy-all-btn" class="control-btn">COPY ALL</button>
-                        </div>
+                <div class="terminal-header">
+                    <span class="ui-label">Output Console</span>
+                    <button id="copy-all-btn" class="icon-btn" title="Copy All">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="terminal-container" id="terminal-output">
+                    <div class="empty-state">
+                        <p>READY_FOR_SYNTHESIS...</p>
                     </div>
-                    <div id="terminal-output" class="terminal-body" data-placeholder="Ready for input..."></div>
                 </div>
             </section>
 
@@ -352,16 +399,15 @@
         window.addEventListener('load', () => {
             // Initialize Google Auth
             if (typeof initializeGoogleAuth === 'function') {
-                initializeGoogleAuth();
+       tializeGoogleAuth();
             }
-
+            
             // Initialize User Preferences
             if (typeof initializePreferencesAutoSave === 'function') {
-                initializePreferencesAutoSave();
+                initializePrenceve();
             }
         });
     </script>
-
 </body>
 
 </html>
