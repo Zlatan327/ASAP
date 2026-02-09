@@ -9,13 +9,20 @@ const GOOGLE_CLIENT_ID = '372043524088-h4pes4fdtsjs7cjtrfb4hfjf720q2p06.apps.goo
 
 let currentUser = null;
 
-// Initialize Google Identity Services on page load
+// Initialize Google Identity Services// Initialize Google OAuth
 function initializeGoogleAuth() {
-    // Check if user already signed in (from localStorage)
-    const storedUser = localStorage.getItem('asap_user');
-    if (storedUser) {
-        currentUser = JSON.parse(storedUser);
+    // Check if user is already signed in (from localStorage)
+    const savedUser = localStorage.getItem('asap_user');
+    if (savedUser) {
+        currentUser = JSON.parse(savedUser);
         showUserProfile(currentUser);
+        loadHistory(); // Load history for the signed-in user
+    } else {
+        // Ensure panel is hidden when not signed in
+        const historyPanel = document.getElementById('history-panel');
+        if (historyPanel) {
+            historyPanel.classList.remove('visible');
+        }
     }
 
     // Initialize Google Sign-In
