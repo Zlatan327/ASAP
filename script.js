@@ -983,9 +983,7 @@ Think step-by-step. First, analyze the story. Then generate the scene list. Fina
                     });
 
                 } catch (error) {
-                    terminalOutput.innerHTML = `<div class="prompt-block" style="color: var(--solar-crimson)"><p>ERROR: ${error.message}</p><p>Falling back to Legacy Engine...</p></div>`;
-
-                    // Fallback to Legacy after 2 seconds
+                    terminalOutput.innerHTML = `<div class="prompt-block" style="color: var(--solar-crimson)"><p>⚠️ ERROR: ${error.message}</p><p>Falling back to Legacy Engine...</p></div>`;
                     setTimeout(() => {
                         runLegacyLogic(text, sessionSeed);
                     }, 2000);
@@ -995,7 +993,8 @@ Think step-by-step. First, analyze the story. Then generate the scene list. Fina
                 }
 
             } else {
-                // LEGACY FLOW
+                // LEGACY FLOW (No API Key or Restoration Mode)
+                runLegacyLogic(text, sessionSeed);
             }
         });
     }
