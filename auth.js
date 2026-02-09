@@ -3,60 +3,67 @@
  * Handles user sign-in/sign-out and profile management
  */
 
-// Google OAuth Client ID from Google Cloud Console
-// https://console.cloud.google.com/apis/credentials
+// Google OAuth Client ID
 const GOOGLE_CLIENT_ID = '372043524088-h4pes4fdtsjs7cjtrfb4hfjf720q2p06.apps.googleusercontent.com';
 
 let currentUser = null;
+let tokenClient;
 
-// Initialize Google Identity Services// Initialize Google OAuth
+// Initialize Google OAuth
 function initializeGoogleAuth() {
     // Check if user is already signed in (from localStorage)
     const savedUser = localStorage.getItem('asap_user');
     if (savedUser) {
         currentUser = JSON.parse(savedUser);
         showUserProfile(currentUser);
-        loadHistory(); // Load history for the signed-in user
+        if (typeof loadHistory === 'function') loadHistory();
     } else {
-        // Ensure panel is COMPLETELY hidden when not signed in
-        const historyPanel = document.getElementById('history-panel');
-        const historyToggle = document.getElementById('history-toggle-btn');
-        if (historyPanel) {
-            historyPanel.style.display = 'none'; // Force hide with display
-        }
-        if (historyToggle) {
-            historyToggle.style.display = 'none';
-        }
+        hideUI();
     }
 
-    // Initialize Google Sign-In
+    // Initialize the Token Client (Popup Flow)
     if (typeof google !== 'undefined') {
-        google.accounts.id.initialize({
+        tokenClient = google.accounts.oauth2.initTokenClient({
             client_id: GOOGLE_CLIENT_ID,
-            callback: handleCredentialResponse,
-            auto_select: false
+            scope: 'https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email',
+            callback: async (response) => {
+                if (response.error) {
+                    console.error('Auth Error:', response);
+                    return;
+                }
+                const token = response.access_token;
+                await fetchUserInfo(token);
+            }
         });
 
         // Attach click handler to custom button
         const customButton = document.getElementById('custom-signin-btn');
         if (customButton) {
-            customButton.addEventListener('click', () => {
-                google.accounts.id.prompt(); // Show One Tap
+            // Remove old listeners
+            const newBtn = customButton.cloneNode(true);
+            customButton.parentNode.replaceChild(newBtn, customButton);
+
+            newBtn.addEventListener('click', () => {
+                // Force "Select Account" prompt in a new window/popup
+                tokenClient.requestAccessToken({ prompt: 'select_account' });
             });
         }
     }
 }
 
-// Handle Google sign-in response
-function handleCredentialResponse(response) {
+// Fetch User Info using Access Token
+async function fetchUserInfo(accessToken) {
     try {
-        const userInfo = parseJwt(response.credential);
+        const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+            headers: { Authorization: `Bearer ${accessToken}` }
+        });
+        const userInfo = await res.json();
 
         currentUser = {
             email: userInfo.email,
             name: userInfo.name,
             picture: userInfo.picture,
-            sub: userInfo.sub // Google user ID
+            sub: userInfo.sub
         };
 
         // Store user info
@@ -68,28 +75,17 @@ function handleCredentialResponse(response) {
         if (typeof loadHistory === 'function') {
             loadHistory();
         }
-    } catch (error) {
-        console.error('Sign-in error:', error);
-        alert('Sign-in failed. Please try again.');
+    } catch (e) {
+        console.error('Failed to fetch user info:', e);
     }
 }
 
-// Parse JWT token (simple base64 decode)
-function parseJwt(token) {
-    try {
-        const base64Url = token.split('.')[1];
-        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-        const jsonPayload = decodeURIComponent(
-            atob(base64)
-                .split('')
-                .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-                .join('')
-        );
-        return JSON.parse(jsonPayload);
-    } catch (error) {
-        console.error('JWT parse error:', error);
-        throw error;
-    }
+// Hide UI elements when not signed in
+function hideUI() {
+    const historyPanel = document.getElementById('history-panel');
+    const historyToggle = document.getElementById('history-toggle-btn');
+    if (historyPanel) historyPanel.style.display = 'none';
+    if (historyToggle) historyToggle.style.display = 'none';
 }
 
 // Show user profile in UI
@@ -109,26 +105,17 @@ function showUserProfile(user) {
     // Show history panel
     const historyPanel = document.getElementById('history-panel');
     if (historyPanel) {
-        historyPanel.style.display = 'block'; // Make visible first
-        setTimeout(() => historyPanel.classList.add('visible'), 10); // Then slide in
-    }
-}
-
-// Toggle history panel
-function toggleHistory() {
-    const historyPanel = document.getElementById('history-panel');
-    if (historyPanel) {
-        historyPanel.classList.toggle('visible');
+        historyPanel.style.display = 'block';
+        setTimeout(() => historyPanel.classList.add('visible'), 10);
     }
 }
 
 // Sign out
 function signOut() {
-    // Clear user data
     localStorage.removeItem('asap_user');
     currentUser = null;
 
-    // Update UI
+    // Reset UI
     const customSigninBtn = document.getElementById('custom-signin-btn');
     const userProfile = document.getElementById('user-profile');
     const historyToggleBtn = document.getElementById('history-toggle-btn');
@@ -141,19 +128,22 @@ function signOut() {
     const historyPanel = document.getElementById('history-panel');
     if (historyPanel) {
         historyPanel.classList.remove('visible');
-        setTimeout(() => historyPanel.style.display = 'none', 300); // Hide after animation
+        setTimeout(() => historyPanel.style.display = 'none', 300);
     }
-    // Clear history display
+
+    // Clear history list
     const historyList = document.getElementById('history-list');
     if (historyList) historyList.innerHTML = '<p class="empty-state">Sign in to view history</p>';
+
+    // Revoke token if we stored it (optional, usually not needed for simple sign-in)
+    // google.accounts.oauth2.revoke(token, done)
 }
 
-// Get current user
 function getCurrentUser() {
     return currentUser;
 }
 
-// Export functions for use in other modules
+// Export
 window.initializeGoogleAuth = initializeGoogleAuth;
 window.signOut = signOut;
 window.getCurrentUser = getCurrentUser;
