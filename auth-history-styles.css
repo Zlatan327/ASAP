@@ -9,10 +9,37 @@
     gap: 16px;
 }
 
-/* Google Sign-in Button Container */
-#google-signin-button {
+/* Custom Sign-in Button */
+.custom-signin-btn {
     display: flex;
     align-items: center;
+    gap: 10px;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    background: var(--glass-surface);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
+    backdrop-filter: blur(10px);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: var(--font-ui);
+}
+
+.custom-signin-btn:hover {
+    background: var(--glass-highlight);
+    border-color: var(--solar-gold);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+}
+
+.custom-signin-btn:active {
+    transform: translateY(0);
+}
+
+.custom-signin-btn svg {
+    flex-shrink: 0;
 }
 
 /* User Profile */

@@ -26,16 +26,13 @@ function initializeGoogleAuth() {
             auto_select: false
         });
 
-        // Render sign-in button
-        google.accounts.id.renderButton(
-            document.getElementById('google-signin-button'),
-            {
-                theme: 'filled_black',
-                size: 'large',
-                text: 'signin_with',
-                shape: 'rectangular'
-            }
-        );
+        // Attach click handler to custom button
+        const customButton = document.getElementById('custom-signin-btn');
+        if (customButton) {
+            customButton.addEventListener('click', () => {
+                google.accounts.id.prompt(); // Show One Tap
+            });
+        }
     }
 }
 
@@ -86,12 +83,12 @@ function parseJwt(token) {
 
 // Show user profile in UI
 function showUserProfile(user) {
-    const signInContainer = document.getElementById('google-signin-button');
+    const customSigninBtn = document.getElementById('custom-signin-btn');
     const userProfile = document.getElementById('user-profile');
     const userAvatar = document.getElementById('user-avatar');
     const userName = document.getElementById('user-name');
 
-    if (signInContainer) signInContainer.style.display = 'none';
+    if (customSigninBtn) customSigninBtn.style.display = 'none';
     if (userProfile) userProfile.style.display = 'flex';
     if (userAvatar) userAvatar.src = user.picture;
     if (userName) userName.textContent = user.name;
@@ -108,10 +105,10 @@ function signOut() {
     currentUser = null;
 
     // Update UI
-    const signInContainer = document.getElementById('google-signin-button');
+    const customSigninBtn = document.getElementById('custom-signin-btn');
     const userProfile = document.getElementById('user-profile');
 
-    if (signInContainer) signInContainer.style.display = 'block';
+    if (customSigninBtn) customSigninBtn.style.display = 'block';
     if (userProfile) userProfile.style.display = 'none';
 
     // Hide history panel
