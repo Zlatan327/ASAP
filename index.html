@@ -165,6 +165,25 @@
             <!-- Left Column: Inputs & Controls -->
             <section class="control-column">
 
+                <div class="api-key-container">
+                    <label for="gemini-api-key" class="ui-label">Gemini API Key</label>
+                    <div class="key-input-wrapper">
+                        <input type="password" id="gemini-api-key" class="modern-input"
+                            placeholder="Paste your API Key here...">
+                        <button id="toggle-key-visibility" class="icon-btn" title="Show/Hide">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                        </button>
+                    </div>
+                    <div id="ai-status-indicator" class="ai-status hidden">
+                        <span class="status-dot active"></span>
+                        <span>Gemini Agent Active</span>
+                    </div>
+                </div>
+
                 <div class="input-container">
                     <label for="prompt-input" class="ui-label" id="input-label">Input Data</label>
                     <div class="textarea-wrapper">

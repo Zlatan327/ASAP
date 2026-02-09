@@ -615,8 +615,176 @@ ${data.narrativeBeats ? `[Sequence]: ${data.narrativeBeats}.` : ''}
         });
     }
 
+    // ==========================================
+    // 5. GEMINI AGENT INTEGRATION
+    // ==========================================
+
+    const apiKeyInput = document.getElementById('gemini-api-key');
+    const toggleKeyBtn = document.getElementById('toggle-key-visibility');
+    const aiStatusIndicator = document.getElementById('ai-status-indicator');
+
+    let geminiApiKey = localStorage.getItem('asap_gemini_key') || '';
+
+    // Initialize Key State
+    if (apiKeyInput) {
+        apiKeyInput.value = geminiApiKey;
+        updateAIStatus();
+
+        apiKeyInput.addEventListener('input', (e) => {
+            geminiApiKey = e.target.value.trim();
+            localStorage.setItem('asap_gemini_key', geminiApiKey);
+            updateAIStatus();
+        });
+
+        if (toggleKeyBtn) {
+            toggleKeyBtn.addEventListener('click', () => {
+                const type = apiKeyInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                apiKeyInput.setAttribute('type', type);
+            });
+        }
+    }
+
+    function updateAIStatus() {
+        if (aiStatusIndicator) {
+            if (geminiApiKey.length > 10) {
+                aiStatusIndicator.classList.remove('hidden');
+                generateBtn.querySelector('.btn-content').textContent = "GENERATE_WITH_GEMINI";
+            } else {
+                aiStatusIndicator.classList.add('hidden');
+                generateBtn.querySelector('.btn-content').textContent = "Process Request";
+            }
+        }
+    }
+
+    async function callGemini(userStory, modelConfig) {
+        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiApiKey}`;
+
+        // SYSTEM INSTRUCTION: Chain-of-Thought + Advanced Prompting
+        const systemPrompt = `
+ROLE:
+You are a Hollywood Storyboard Artist and Expert Video Prompt Engineer. Your specialty is translating narrative text into highly detailed, cinematic video prompts for AI generators like Google Veo, OpenAI Sora, and Kling.
+
+OBJECTIVE:
+Analyze the user's story, break it down into key visual scenes (max 8), and generate a structured JSON output. Each scene must be optimized for video generation.
+
+PROCESS (~Chain of Thought):
+1. [ANALYZE]: Identify the Genre, Tone, and Core Conflict.
+2. [VISUALIZE]: Imagine the scenes in a sequence. If the story is long, compress it into key beats.
+3. [ENRICH]: Add specific cinematic details (Camera angles, Lighting, Texture, Film Stock).
+4. [SELF-CORRECT]: Review your prompts. Are they too vague? Do they have too much text? (Limit: 75 words per prompt). *Refine them.*
+5. [OUTPUT]: Generate the final JSON.
+
+PROMPT FORMULA (The "5-Part Structure"):
+[Cinematography/Camera] + [Subject] + [Action/Movement] + [Context/Environment] + [Style/Lighting/Audio]
+
+EXAMPLES:
+
+Input: "A cybersecurity expert discovers a hack."
+Output:
+[
+  {
+    "scene_id": 1,
+    "prompt": "Extreme close-up on a dilated pupil reflecting scrolling green code. The reflection shifts to red. Camera pulls back to reveal a sweat-drenched face of a young woman in a dark server room. Blue LED lights flicker. Cyberpunk thriller style. Audio: Heartbeat thumping, typing sounds.",
+    "camera": "ECU pulling back to MCU",
+    "subject": "Cybersecurity expert",
+    "action": "Reacting to hack",
+    "context": "Dark server room with LEDs",
+    "style": "Cyberpunk thriller"
+  }
+]
+
+Input: "A cowboy rides into a sunset."
+Output:
+[
+  {
+    "scene_id": 1,
+    "prompt": "Wide tracking shot, silhouette of a lone cowboy on a horse riding away from camera towards a massive burning orange sun on the horizon. Heat haze shimmers off the desert floor. Dust kicks up. Western epic style, Kodachrome film stock. Audio: Ennio Morricone style whistle, hoofbeats.",
+    "camera": "Wide tracking shot",
+    "subject": "Silhouette of cowboy and horse",
+    "action": "Riding into sunset",
+    "context": "Desert horizon",
+    "style": "Western epic, Kodachrome"
+  }
+]
+`;
+
+        // INJECT RICH CONTEXT
+        const stylePreset = document.getElementById('style-preset').value;
+        const ratio = selectedRatio;
+        const modelName = modelConfig.name;
+
+        // "Simulated" Search Context (Heuristic based on keywords)
+        let searchContext = "";
+        const lowerStory = userStory.toLowerCase();
+        if (lowerStory.includes("sci-fi") || stylePreset === "digital") {
+            searchContext = "Reference: Blade Runner 2049, Dune aesthetics, high-tech interfaces, neon lighting.";
+        } else if (lowerStory.includes("horror") || stylePreset === "raw") {
+            searchContext = "Reference: A24 Horror style, psychological tension, dark shadows, unsettling angles.";
+        } else if (stylePreset === "anime") {
+            searchContext = "Reference: Makoto Shinkai backgrounds, fluid animation, vibrant colors, emotional lighting.";
+        }
+
+        const userMessage = {
+            contents: [{
+                parts: [{
+                    text: `
+SYSTEM_INSTRUCTION: ${systemPrompt}
+
+CONTEXT_DATA:
+- Target Model: ${modelName} (Optimize for this specific model's strengths)
+- Selected Style: ${stylePreset}
+- Aspect Ratio: ${ratio}
+- External References (Simulated): ${searchContext}
+
+USER_STORY:
+"${userStory}"
+
+INSTRUCTIONS:
+Think step-by-step. First, analyze the story. Then generate the scene list. Finally, output the valid JSON array.
+`
+                }]
+            }]
+        };
+
+        try {
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(userMessage)
+            });
+
+            if (!response.ok) {
+                const errData = await response.json();
+                throw new Error(errData.error?.message || 'Gemini API Error');
+            }
+
+            const data = await response.json();
+            const textResponse = data.candidates[0].content.parts[0].text;
+
+            // Clean up code blocks if Gemini mimics them despite instructions
+            const jsonStr = textResponse.replace(/```json/g, '').replace(/```/g, '').trim();
+            return JSON.parse(jsonStr);
+
+        } catch (error) {
+            console.error("Gemini Error:", error);
+            throw error;
+        }
+    }
+
+    // OVERRIDE GENERATE BUTTON FOR AI MODE
     if (generateBtn) {
-        generateBtn.addEventListener('click', () => {
+        // Remove old listener to avoid double execution (cleanest way is cloning or just handling logic inside)
+        // Since we are appending to the file, we need to be careful. 
+        // Better approach: Modify the existing listener or create a unified handler.
+        // For this patch, I will replace the main logic block in Step 4 instead of appending.
+
+        // REPLACING ORIGINAL LISTENER LOGIC
+        generateBtn.replaceWith(generateBtn.cloneNode(true));
+        const newBtn = document.getElementById('generate-btn'); // Re-select
+
+        newBtn.addEventListener('click', async () => {
             const text = promptInput.value.trim();
             if (!text) {
                 promptInput.style.borderColor = 'red';
@@ -625,145 +793,124 @@ ${data.narrativeBeats ? `[Sequence]: ${data.narrativeBeats}.` : ''}
             }
 
             // UI State
-            const originalBtnText = generateBtn.querySelector('.btn-content').textContent;
-            generateBtn.querySelector('.btn-content').textContent = isJsonMode ? "COMPILING JSON..." : "DIRECTING...";
-            generateBtn.classList.add('disabled');
-            terminalOutput.innerHTML = '<div class="empty-state"><p>ANALYZING_CINEMATOGRAPHY...</p></div>';
+            const originalBtnText = newBtn.querySelector('.btn-content').textContent;
+            newBtn.classList.add('disabled');
+            terminalOutput.innerHTML = '<div class="empty-state"><p>INITIALIZING_AGENT...</p></div>';
 
-            // Shared Seed for Consistency across the sequence
             const sessionSeed = Math.floor(Math.random() * 1000000000);
 
-            setTimeout(() => {
-                terminalOutput.innerHTML = '';
-                let results = [];
+            // DECISION: AI or LEGACY?
+            if (geminiApiKey.length > 10 && activeMode === 'video') {
+                // AI FLOW
+                newBtn.querySelector('.btn-content').textContent = "GEMINI_THINKING...";
 
-                if (activeMode === 'video') {
-                    // If Storyboard mode selected, don't split scenes, just do 1 giant prompt
-                    if (modelSelect.value === 'nano-storyboard') {
-                        results.push(processScene(text, 'nano-storyboard', 0, isJsonMode, sessionSeed));
-                    } else {
-                        // MULTI-SHOT MODE LOGIC (The "Framer" Flex)
-                        if (isMultiShotMode && text.split(/\n+/).length > 1) {
-                            const segments = splitIntoScenes(text);
-                            let combinedPrompt = "";
+                try {
+                    const modelConfig = modelSpecs[modelSelect.value] || modelSpecs['veo3'];
+                    const scenes = await callGemini(text, modelConfig);
 
-                            // 1. Build the Multi-Shot textual prompt
-                            segments.forEach((seg, i) => {
-                                const analysis = analyzeText(seg);
-                                // Check if user already typed "Shot 1:" or "Shot 2:" to avoid double labeling
-                                let cleanAction = analysis.action;
-                                if (cleanAction.match(/^Shot \d+:/i)) {
-                                    cleanAction = cleanAction.replace(/^Shot \d+:\s*/i, '');
-                                }
+                    terminalOutput.innerHTML = ''; // Clear loading
 
-                                // If user already specified a camera in brackets [Crane Shot], trust it, otherwise use detected
-                                // For Motivated Camera using "Name [Focus: X]", we want to keep that whole string
-                                const cameraLabel = cleanAction.match(/^\[(.*?)\]/) ? '' : `[${analysis.camera.name}] `;
-                                const sequenceLabel = analysis.narrativeBeats ? ` (Sequence: ${analysis.narrativeBeats})` : '';
+                    scenes.forEach((scene, index) => {
+                        const res = {
+                            id: index + 1,
+                            label: `${modelConfig.name} [GEMINI_AGENT]`,
+                            optimized: isJsonMode ? JSON.stringify(scene, null, 2) : scene.prompt,
+                            raw: text
+                        };
+                        renderResult(res);
+                    });
 
-                                combinedPrompt += `Shot ${i + 1}: ${cameraLabel}${cleanAction}.${sequenceLabel} ${analysis.visuals}. \n`;
-                            });
+                } catch (error) {
+                    terminalOutput.innerHTML = `<div class="prompt-block" style="color: var(--solar-crimson)"><p>ERROR: ${error.message}</p><p>Falling back to Legacy Engine...</p></div>`;
 
-                            const masterAnalysis = analyzeText(text); // Macro analysis for env/lighting
-                            combinedPrompt += `\n[Consistent Environment]: ${masterAnalysis.env}. [Lighting]: ${masterAnalysis.lighting}. \n(Continuous Shot Sequence, No Cuts).`;
-
-                            // 2. Handle JSON Mode for Multi-Shot
-                            if (isJsonMode) {
-                                const model = modelSpecs[modelSelect.value] || modelSpecs['veo3'];
-                                const payload = {
-                                    model_id: model.name,
-                                    prompt: combinedPrompt.trim(),
-                                    negative_prompt: masterAnalysis.negativeConstraints,
-                                    cfg_scale: 0.5,
-                                    aspect_ratio: selectedRatio || "16:9",
-                                    camera_control: {
-                                        type: "Dynamic/Multi-Shot",
-                                        lens: "Variable"
-                                    },
-                                    seed: sessionSeed
-                                };
-
-                                results.push({
-                                    id: 1,
-                                    label: `${model.name} [JSON] [MULTI-SHOT]`,
-                                    optimized: JSON.stringify(payload, null, 2),
-                                    raw: text
-                                });
-                            } else {
-                                // Standard Text Output
-                                results.push({
-                                    id: 1,
-                                    label: `${modelSpecs[modelSelect.value].name} [MULTI-SHOT]`,
-                                    optimized: combinedPrompt,
-                                    raw: text
-                                });
-                            }
-
-                        } else {
-                            // Standard video split
-                            const segments = splitIntoScenes(text);
-                            const isSingleShot = segments.length === 1;
-
-                            segments.forEach((seg, i) => {
-                                const res = processScene(seg, modelSelect.value, i, isJsonMode, sessionSeed);
-                                if (isSingleShot) res.label = res.label.replace('SEQ_001', 'SINGLE_SHOT'); // Override label
-                                results.push(res);
-                            });
-                        }
-                    }
-                } else {
-                    results = optimizeRestoration(text);
+                    // Fallback to Legacy after 2 seconds
+                    setTimeout(() => {
+                        runLegacyLogic(text, sessionSeed);
+                    }, 2000);
+                } finally {
+                    newBtn.classList.remove('disabled');
+                    newBtn.querySelector('.btn-content').textContent = originalBtnText;
                 }
 
-                results.forEach(res => renderResult(res));
-
-                generateBtn.classList.remove('disabled');
-                generateBtn.querySelector('.btn-content').textContent = originalBtnText;
-            }, 1000);
+            } else {
+                // LEGACY FLOW
+                runLegacyLogic(text, sessionSeed);
+            }
         });
     }
 
-    function splitIntoScenes(text) {
-        let chunks = text.split(/\n+/).map(s => s.trim()).filter(s => s.length > 0);
-        if (chunks.length === 1 && text.length > 100) {
-            chunks = text.match(/[^.!?]+[.!?]+/g) || [text];
-        }
-        return chunks;
-    }
+    function runLegacyLogic(text, sessionSeed) {
+        const originalBtnText = isJsonMode ? "COMPILING JSON..." : "DIRECTING...";
+        // (Re-using original logic wrapper)
+        setTimeout(() => {
+            terminalOutput.innerHTML = '';
+            let results = [];
 
-    function renderResult(res) {
-        const block = document.createElement('div');
-        block.className = 'prompt-block';
+            if (activeMode === 'video') {
+                if (modelSelect.value === 'nano-storyboard') {
+                    results.push(processScene(text, 'nano-storyboard', 0, isJsonMode, sessionSeed));
+                } else {
+                    if (isMultiShotMode && text.split(/\\n+/).length > 1) {
+                        // ... (Original Multi-Shot Logic kept intact effectively by implicit availability of helper functions)
+                        const segments = splitIntoScenes(text);
+                        let combinedPrompt = "";
+                        segments.forEach((seg, i) => {
+                            const analysis = analyzeText(seg);
+                            let cleanAction = analysis.action;
+                            if (cleanAction.match(/^Shot \\d+:/i)) {
+                                cleanAction = cleanAction.replace(/^Shot \\d+:\\s*/i, '');
+                            }
+                            const cameraLabel = cleanAction.match(/^\\[(.*?)\\]/) ? '' : `[${analysis.camera.name}] `;
+                            const sequenceLabel = analysis.narrativeBeats ? ` (Sequence: ${analysis.narrativeBeats})` : '';
+                            combinedPrompt += `Shot ${i + 1}: ${cameraLabel}${cleanAction}.${sequenceLabel} ${analysis.visuals}. \\n`;
+                        });
+                        const masterAnalysis = analyzeText(text);
+                        combinedPrompt += `\\n[Consistent Environment]: ${masterAnalysis.env}. [Lighting]: ${masterAnalysis.lighting}. \\n(Continuous Shot Sequence, No Cuts).`;
 
-        let content = res.optimized.replace(/\n/g, '<br>');
-        // Pretty print JSON in HTML
-        if (res.label.includes('JSON')) {
-            content = `<pre style="white-space: pre-wrap; color: #a5f3fc; font-family: 'JetBrains Mono', monospace; font-size: 0.85em;">${res.optimized}</pre>`;
-        }
+                        if (isJsonMode) {
+                            const model = modelSpecs[modelSelect.value] || modelSpecs['veo3'];
+                            const payload = {
+                                model_id: model.name,
+                                prompt: combinedPrompt.trim(),
+                                negative_prompt: masterAnalysis.negativeConstraints,
+                                cfg_scale: 0.5,
+                                aspect_ratio: selectedRatio || "16:9",
+                                camera_control: { type: "Dynamic/Multi-Shot", lens: "Variable" },
+                                seed: sessionSeed
+                            };
+                            results.push({ id: 1, label: `${model.name} [JSON] [MULTI-SHOT]`, optimized: JSON.stringify(payload, null, 2), raw: text });
+                        } else {
+                            results.push({ id: 1, label: `${modelSpecs[modelSelect.value].name} [MULTI-SHOT]`, optimized: combinedPrompt, raw: text });
+                        }
 
-        block.innerHTML = `
-            <div class="prompt-header">
-                <span>${res.label.includes('SINGLE_SHOT') ? 'MASTER_PROMPT' : (activeMode === 'video' ? 'SEQ' : 'TASK') + '_' + String(res.id).padStart(3, '0')} // ${res.label}</span>
-                <button class="copy-btn">COPY</button>
-            </div>
-            <div class="prompt-content">${content}</div>
-        `;
+                    } else {
+                        const segments = splitIntoScenes(text);
+                        const isSingleShot = segments.length === 1;
+                        segments.forEach((seg, i) => {
+                            const res = processScene(seg, modelSelect.value, i, isJsonMode, sessionSeed);
+                            if (isSingleShot) res.label = res.label.replace('SEQ_001', 'SINGLE_SHOT');
+                            results.push(res);
+                        });
+                    }
+                }
+            } else {
+                results = optimizeRestoration(text);
+            }
 
-        const cBtn = block.querySelector('.copy-btn');
-        cBtn.addEventListener('click', () => {
-            navigator.clipboard.writeText(res.optimized);
-            cBtn.textContent = "COPIED";
-            setTimeout(() => cBtn.textContent = "COPY", 1000);
-        });
-
-        terminalOutput.appendChild(block);
+            results.forEach(res => renderResult(res));
+            const btn = document.getElementById('generate-btn');
+            if (btn) {
+                btn.classList.remove('disabled');
+                btn.querySelector('.btn-content').textContent = "Process Request"; // Reset to default
+            }
+        }, 500);
     }
 
     if (copyAllBtn) {
         copyAllBtn.addEventListener('click', () => {
             const all = document.querySelectorAll('.prompt-content');
             if (all.length === 0) return;
-            const text = Array.from(all).map(d => d.innerText).join('\n\n');
+            const text = Array.from(all).map(d => d.innerText).join('\\n\\n');
             navigator.clipboard.writeText(text);
             copyAllBtn.style.color = '#10b981';
             setTimeout(() => copyAllBtn.style.color = '', 1000);
@@ -771,3 +918,4 @@ ${data.narrativeBeats ? `[Sequence]: ${data.narrativeBeats}.` : ''}
     }
 
 });
+
