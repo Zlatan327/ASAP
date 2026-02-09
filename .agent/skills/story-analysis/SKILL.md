@@ -1,163 +1,77 @@
 ---
 name: story-analysis
-description: Advanced story parsing for video prompt generation. Provides character extraction, scene segmentation, continuity tracking, and narrative intelligence.
+description: Advanced story parsing for video prompt generation. Includes Beech's Lab professional workflows, Scene Inference, and Continuity Building.
 ---
 
-# Story Analysis Skill
+# Story Analysis Skill (Visual Director Edition)
 
-This skill provides advanced Natural Language Processing capabilities for story-to-video prompt generation.
+This skill transforms text into professional-grade video prompts using "Beech's Lab" workflows and advanced NLP.
 
 ## Capabilities
 
-1. **Character Extraction**: Identify and track character names and descriptions
-2. **Scene Segmentation**: Break stories into logical scenes using semantic analysis
-3. **Continuity Tracking**: Maintain visual state across scenes
-4. **Temporal/Spatial Logic**: Track time of day, location, and persistent details
+1.  **Scene Inference**: Automatically segment stories into shootable scenes with inferred context (Sluglines).
+2.  **Scene Builder**: Link scenes sequentially with "Continuity Bridges" (Prompt 2 knows Prompt 1).
+3.  **Camera Director**: Translate abstract motion ("Zoom in") into technical camera moves ("Push In", "Dolly Zoom").
+4.  **Detail Injector**: "Anti-Plastic" skin enhancement for human close-ups (vellus hair, pores).
+5.  **Audio Engineering**: Generate 4-layer audio prompts (Dialogue, Ambient, SFX, Music) for Veo 3.
+6.  **Style Recipes**: Tailored presets for GTA 6, VX1000, Security Cam, etc.
 
 ## Usage
 
-### 1. Character Extraction
+### 1. Scene Inference & Building
 
 ```javascript
-// Import the character extractor
-const { extractCharacters } = require('./scripts/character-extractor.js');
-
-const story = "Alex enters the room. Dr. Martinez looks up from his desk.";
-const characters = extractCharacters(story);
-// Returns: ["Alex", "Dr. Martinez"]
-```
-
-### 2. Scene Segmentation
-
-```javascript
-const { segmentScenes } = require('./scripts/scene-segmenter.js');
-
-const story = `Alex enters the room. The lights flicker.
-Suddenly, she hears a noise. She turns around.
-Later that night, she investigates the basement.`;
-
-const scenes = segmentScenes(story);
-// Returns: [
-//   "Alex enters the room. The lights flicker. Suddenly, she hears a noise. She turns around.",
-//   "Later that night, she investigates the basement."
-// ]
-```
-
-### 3. Continuity Tracking
-
-```javascript
+const { SceneInferrer } = require('./scripts/scene-inferrer.js');
+const { SceneBuilder } = require('./scripts/scene-builder.js');
 const { ContinuityTracker } = require('./scripts/continuity-tracker.js');
 
+const text = "John ran in the rain. // Next day // He was sick.";
+
+// A. Identify Scenes
+const inferrer = new SceneInferrer();
+const rawScenes = inferrer.segment(text); 
+// -> [{text: "John ran...", location: "Unknown", time: "Day"}, ...]
+
+// B. Build Sequence (Connects them)
 const tracker = new ContinuityTracker();
+const builder = new SceneBuilder(tracker);
+const richScenes = builder.build(rawScenes);
 
-// Scene 1
-tracker.updateFromScene("Alex cuts her hand on broken glass.");
-tracker.state.characters["Alex"].injuries; // ["cut on hand"]
-
-// Scene 2 - injury persists
-const prompt2 = tracker.injectIntoPrompt("Alex runs down the hallway.");
-// Prompt includes: "[Continuity]: Alex has a cut on her hand"
+// Scene 2 will now contain:
+// [BRIDGE]: Action flows from previous scene...
+// [CONTINUITY]: John is wet/sick...
 ```
 
-### 4. Story State Manager
+### 2. Camera Director
 
 ```javascript
-const { StoryState } = require('./scripts/story-state.js');
+const { CameraDirector } = require('./scripts/camera-logic.js');
+const director = new CameraDirector();
 
-const state = new StoryState(fullStory);
-console.log(state.characters); // Extracted character list
-console.log(state.scenes); // Segmented scenes
-console.log(state.timeline); // Time/location tracking
+const shot = director.determineShot("Zoom in on his face as he screams");
+console.log(shot); 
+// { name: "Push In", desc: "Slow push-in towards subject..." }
 ```
 
-## Integration with ASAP Tool
-
-### Step 1: Import the skill utilities
-
-Add to the top of `script.js`:
+### 3. Detail Injector (Skin Enhancer)
 
 ```javascript
-// Story Analysis Skill
-const StoryState = /* paste StoryState class */;
-const ContinuityTracker = /* paste ContinuityTracker class */;
+const { DetailInjector } = require('./scripts/detail-injector.js');
+const injector = new DetailInjector();
+
+// Automatically detects human subjects in close-ups
+const details = injector.injectDetails("Close up of a woman", "Woman", {name: "Close Up"});
+// Returns: "INTRICATE FACIAL DETAILS: Visible vellus hair, peach fuzz..."
 ```
 
-### Step 2: Replace character extraction
-
-**Before** (Lines 299-304):
-```javascript
-let name = "The Protagonist";
-if (lower.includes("soldier")) name = "The Soldier";
-```
-
-**After**:
-```javascript
-const storyState = new StoryState(text);
-let name = storyState.characters[0] || "The Protagonist";
-```
-
-### Step 3: Replace scene segmentation
-
-**Before** (Line 844):
-```javascript
-const segments = splitIntoScenes(text);
-```
-
-**After**:
-```javascript
-const segments = storyState.scenes;
-```
-
-### Step 4: Add continuity
+### 4. Audio Engineer
 
 ```javascript
-const continuity = new ContinuityTracker();
-segments.forEach((scene, i) => {
-    const analysis = analyzeText(scene);
-    const prompt = modelFormat(analysis);
-    const withContinuity = continuity.injectIntoPrompt(prompt);
-    continuity.updateFromScene(scene);
-    renderResult(withContinuity);
-});
-```
+const { AudioEngineer } = require('./scripts/audio-engineer.js');
+const audio = new AudioEngineer();
 
-## Advanced Features
-
-### Genre Detection
-
-The skill includes genre detection to automatically select appropriate visual styles:
-
-```javascript
-const { detectGenre } = require('./scripts/genre-detector.js');
-
-const genre = detectGenre(story);
-// Returns: { type: "noir", confidence: 0.85, keywords: ["detective", "rain", "shadow"] }
-```
-
-### Temporal Logic
-
-Track time progression automatically:
-
-```javascript
-tracker.updateFromScene("The sun rises over the city.");
-tracker.state.environment.timeOfDay; // "morning"
-
-tracker.updateFromScene("Hours later, darkness falls.");
-tracker.state.environment.timeOfDay; // "night"
-```
-
-### Spatial Continuity
-
-Track location changes and persistent objects:
-
-```javascript
-tracker.updateFromScene("Alex enters a dark warehouse. A red car sits in the corner.");
-tracker.state.environment.location; // "warehouse"
-tracker.state.objects; // ["red car"]
-
-// Next scene
-tracker.updateFromScene("She walks toward the vehicle.");
-// AI knows "the vehicle" = "red car" from previous scene
+const prompt = audio.analyze('Ben yelled "Stop!" over the thunder.', "horror");
+// Returns: "Dialogue: "Stop!" | Ambient: Thunder storm | SFX: - | Music: Dissonant strings"
 ```
 
 ## File Structure
@@ -166,44 +80,20 @@ tracker.updateFromScene("She walks toward the vehicle.");
 .agent/skills/story-analysis/
 ├── SKILL.md (this file)
 ├── scripts/
-│   ├── story-state.js          # Main StoryState class
-│   ├── character-extractor.js  # Character NER
-│   ├── scene-segmenter.js      # Scene boundary detection
-│   ├── continuity-tracker.js   # State persistence
-│   └── genre-detector.js       # Genre classification
-├── examples/
-│   └── integration-example.js  # Full integration demo
-└── resources/
-    └── transition-words.json   # Scene transition vocabulary
+│   ├── story-state.js          # Entity Extraction & State
+│   ├── scene-inferrer.js       # Auto-segmentation (Sluglines)
+│   ├── scene-builder.js        # Sequential Logic (Bridges)
+│   ├── continuity-tracker.js   # State Persistence
+│   ├── camera-logic.js         # Camera Moves (Dolly, Truck, Roll)
+│   ├── detail-injector.js      # Skin Enhancer / Anti-Plastic
+│   ├── audio-engineer.js       # Audio Prompt Generation
+│   ├── style-manager.js        # Visual Recipes (GTA 6, VX1000)
+│   ├── visual-translator.js    # Abstract -> Concrete
+│   └── token-optimizer.js      # Prompt compression
 ```
 
 ## Best Practices
 
-1. **Initialize StoryState once** per user input
-2. **Create ContinuityTracker** at the start of scene loop
-3. **Inject continuity** into prompts, not directly into scene text
-4. **Update tracker after** processing each scene
-
-## Troubleshooting
-
-**Problem**: Characters not detected
-- **Solution**: Check if names are capitalized in input
-
-**Problem**: Scenes merged incorrectly
-- **Solution**: Use explicit transition words ("Later", "Meanwhile", "Suddenly")
-
-**Problem**: Continuity lost
-- **Solution**: Ensure `tracker.updateFromScene()` is called after each scene
-
-## Performance
-
-- Character extraction: ~5ms per 1000 words
-- Scene segmentation: ~10ms per 1000 words
-- Continuity tracking: ~2ms per scene
-
-## Future Enhancements
-
-- [ ] Emotion tracking across scenes
-- [ ] Relationship mapping (character interactions)
-- [ ] Automatic conflict/resolution detection
-- [ ] Multi-language support
+1.  **Use the Scene Builder**: Always pass inferred scenes through `SceneBuilder` to ensure flow.
+2.  **Trust the Inferrer**: It handles explicit sluglines (`INT. LAB`) AND natural language transitions ("Later that night").
+3.  **Beech's Recipes**: Use `StyleManager` to access specific look-devs like `gta6` or `security` which override standard film stocks.
