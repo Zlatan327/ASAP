@@ -282,7 +282,11 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         'seedance-pro': {
             name: 'SEEDANCE_1.5_PRO', type: 'video',
-            format: (data) => `[Motion]: ${data.action}. [Camera]: ${data.camera.desc}. [Subject]: ${data.subject} in ${data.env}. --smooth_motion true --FPS 24`
+            format: (data) => `(Cinematic, Film grain, Anamorphic lens flare, Shot on Arri Alexa 65). [Motion]: ${data.action}. [Camera]: ${data.camera.desc}. [Subject]: ${data.subject} in ${data.env}. --smooth_motion true --FPS 24`
+        },
+        'seedance-lite': {
+            name: 'SEEDANCE_LITE (CINEMATIC)', type: 'video',
+            format: (data) => `Cinematic. Film grain. Anamorphic lens flare. Shot on Arri Alexa 65. David Fincher style color grading. ${data.subject} ${data.action} in ${data.env}. Camera is ${data.camera.desc}, focusing on details. ${data.lighting}.`
         }
     };
 
