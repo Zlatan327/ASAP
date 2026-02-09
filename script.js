@@ -166,11 +166,12 @@ document.addEventListener('DOMContentLoaded', () => {
         stocks: {
             "gritty": "Kodak Vision3 500T 5219 (Heavy Grain)",
             "noir": "Kodak Tri-X 400 (B&W High Contrast)",
-            "scifi": "Fujifilm Eterna 500T (Cool Teals/Greens)",
-            "natural": "Kodak Vision3 250D (Fine Grain, Warm)",
-            "vintage": "Kodachrome 64 (Vibrant, Saturated)"
+            "scifi": "Fujifilm Eterna 500T (Cold 9000K Teals)",
+            "natural": "Kodak Vision3 250D (5600K Daylight)",
+            "vintage": "Kodachrome 64 (Warm 3000K Tungsten)",
+            "masterpiece": "Kodak Portra 400 (Fine Grain) + Arri Alexa 65 Sensor"
         },
-        lenses: { "wide": "Panavision C-Series (15mm)", "portrait": "85mm Prime", "macro": "100mm Macro", "standard": "35mm Anamorphic" }
+        lenses: { "wide": "Panavision C-Series 35mm", "portrait": "85mm Prime f/1.4", "macro": "100mm Macro", "standard": "50mm Anamorphic" }
     };
 
     function translateAbstractToConcrete(text) {
@@ -185,8 +186,8 @@ document.addEventListener('DOMContentLoaded', () => {
         return text.split(/\s+/).filter(w => !stopWords.has(w.toLowerCase().replace(/[^a-z]/g, ''))).join(' ');
     }
 
-    // UPDATED: analyzeText now accepts 'bridgeContext' and 'continuityNotes'
-    function analyzeText(text, bridgeContext = "", continuityNotes = "") {
+    // UPDATED: analyzeText now accepts 'bridgeContext', 'continuityNotes', and 'inferredSlugline'
+    function analyzeText(text, bridgeContext = "", continuityNotes = "", inferredSlugline = "") {
         const concreteText = translateAbstractToConcrete(text);
         const lower = concreteText.toLowerCase();
 
@@ -211,20 +212,38 @@ document.addEventListener('DOMContentLoaded', () => {
         // Mood Logic (Keep existing mood detection for film stock, but strictly use styleDesc for visual look)
         let mood = "cinematic";
         let filmStock = techSpecs.stocks["natural"];
-        if (lower.match(/sad|cry|tear/)) { mood = "sad"; filmStock = techSpecs.stocks["natural"]; }
-        if (lower.match(/scary|dark|fear/)) { mood = "scary"; filmStock = techSpecs.stocks["gritty"]; }
-        if (lower.match(/happy|joy/)) { mood = "happy"; filmStock = techSpecs.stocks["vintage"]; }
-        if (lower.match(/cyber|future/)) { mood = "tense"; filmStock = techSpecs.stocks["scifi"]; }
+        let lightingSetup = "Soft High-Key lighting"; // Default
+
+        if (lower.match(/sad|cry|tear|lonely/)) {
+            mood = "sad";
+            filmStock = techSpecs.stocks["scifi"];
+            lightingSetup = "Cold 9000K Moonlight, Split Lighting (High Contrast)";
+        }
+        if (lower.match(/scary|dark|fear|horror/)) {
+            mood = "scary";
+            filmStock = techSpecs.stocks["gritty"];
+            lightingSetup = "Rembrandt Lighting, Deep Shadows, Flicker effect";
+        }
+        if (lower.match(/happy|joy|love/)) {
+            mood = "happy";
+            filmStock = techSpecs.stocks["vintage"];
+            lightingSetup = "Warm 3000K Golden Hour, Backlit with Lens Flare";
+        }
+        if (lower.match(/cyber|future|tech/)) {
+            mood = "tense";
+            filmStock = techSpecs.stocks["scifi"];
+            lightingSetup = "Neon Volumetric Fog, Cyan and Magenta Rim Lights";
+        }
+        if (lower.match(/epic|hero|battle/)) {
+            mood = "epic";
+            filmStock = techSpecs.stocks["masterpiece"];
+            lightingSetup = "Dramatic Chiaroscuro, God Rays (Volumetric), 5600K Key Light";
+        }
 
         // Colorist (Fallback if no specific style desc, otherwise append style desc)
-        const colorGrades = {
-            "cinematic": "Teal and Orange separation",
-            "sad": "Cool blue desaturated palette",
-            "scary": "High contrast, crushed blacks",
-            "happy": "Warm golden hour hues",
-            "tense": "Bleach bypass look"
-        };
-        let lighting = styleDesc ? `Look: ${styleDesc}` : `Lighting: ${colorGrades[mood]}`;
+        // If 'styleDesc' exists (e.g. GTA 6), it overrides the default lighting text, 
+        // but we still want to append the sophisticated lighting setup if it complements it.
+        let lighting = styleDesc ? `Look: ${styleDesc} | Lighting: ${lightingSetup}` : `Lighting: ${lightingSetup}`;
 
         // 3. CAMERA
         let camera = cinematicShots["establishing"];
@@ -246,10 +265,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const cameraFinal = { name: camera.name, desc: `${camera.desc} Movement: ${movementDesc}.` };
 
         // 4. SCENE CONTEXT (Skill 3)
-        // Inject continuity notes into context
-        let context = "Cinematic Background";
-        if (lower.includes("casino")) context = "Casino interior";
-        else if (lower.includes("highway")) context = "Highway";
+        // Use Inferred Slugline if available, otherwise heuristic
+        let context = inferredSlugline || "Cinematic Background";
+        if (!inferredSlugline) {
+            if (lower.includes("casino")) context = "Casino interior";
+            else if (lower.includes("highway")) context = "Highway";
+        }
 
         // Append Continuity & Bridge
         if (bridgeContext) context += ` ${bridgeContext}`;
@@ -297,8 +318,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    function processScene(rawText, modelId, index, bridge = "", continuity = "") {
-        const analysis = analyzeText(rawText, bridge, continuity);
+    function processScene(rawText, modelId, index, bridge = "", continuity = "", slugline = "") {
+        const analysis = analyzeText(rawText, bridge, continuity, slugline);
         const model = modelSpecs[modelId] || modelSpecs['veo3'];
         return {
             id: index + 1,
@@ -332,32 +353,37 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('generate-btn').addEventListener('click', () => {
             const text = promptInput.value;
             // SCENE BUILDER LOGIC (Active Continuity)
-            const storyState = new StoryState(text);
+            // SCENE BUILDER LOGIC (Active Continuity)
+            // 1. Use Scene Inferrer for intelligent segmentation
+            const sceneInferrer = new window.SceneInferrer ? new window.SceneInferrer() : null;
+            const segments = sceneInferrer ? sceneInferrer.segment(text) : [{ text: text, slugline: "EXT. SCENE - DAY" }];
+
+            // 2. Initialize State
             const continuityTracker = new ContinuityTracker();
 
             terminalOutput.innerHTML = '';
-
             let previousSceneText = "";
 
-            storyState.scenes.forEach((scene, i) => {
-                // 1. Generate Bridge
+            segments.forEach((segment, i) => {
+                const sceneText = segment.text;
+
+                // 3. Generate Bridge
                 let bridge = "";
                 if (i > 0) {
                     const lastWords = previousSceneText.slice(-50).replace(/\s+/g, ' ').trim();
                     bridge = `[BRIDGE]: Action flows from previous scene ("...${lastWords}").`;
                 }
 
-                // 2. Inject Continuity
-                // We don't inject *into* the tracker here, we ASK the tracker for current state prompt
+                // 4. Inject Continuity
                 const continuityNote = continuityTracker.injectIntoPrompt("").replace("", "").trim();
-                // Result is "[Story State]: Time: Morning | Alex: injured"
 
-                // 3. Process
-                const res = processScene(scene, modelSelect.value, i, bridge, continuityNote);
+                // 5. Process (Pass inferred slugline as context override)
+                // We modify processScene/analyzeText to use the inferred slugline
+                const res = processScene(sceneText, modelSelect.value, i, bridge, continuityNote, segment.slugline);
 
-                // 4. Update Tracker for NEXT scene
-                continuityTracker.updateFromScene(scene);
-                previousSceneText = scene;
+                // 6. Update Tracker
+                continuityTracker.updateFromScene(sceneText);
+                previousSceneText = sceneText;
 
                 // Render
                 const div = document.createElement('div');
