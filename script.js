@@ -982,6 +982,12 @@ Think step-by-step. First, analyze the story. Then generate the scene list. Fina
                         renderResult(res);
                     });
 
+                    // Save to history after all outputs rendered
+                    if (typeof savePromptToHistory === 'function' && window._tempOutputs && window._tempOutputs.length > 0) {
+                        savePromptToHistory(text, window._tempOutputs, modelConfig.name, styleSelect.value);
+                        window._tempOutputs = []; // Reset
+                    }
+
                 } catch (error) {
                     terminalOutput.innerHTML = `<div class="prompt-block" style="color: var(--solar-crimson)"><p>⚠️ ERROR: ${error.message}</p><p>Falling back to Legacy Engine...</p></div>`;
                     setTimeout(() => {
@@ -1018,6 +1024,13 @@ Think step-by-step. First, analyze the story. Then generate the scene list. Fina
         <div class="prompt-content" style="white-space: pre-wrap;">${res.optimized}</div>
     `;
         terminalOutput.appendChild(div);
+
+        // Save to history (if user signed in)
+        if (typeof savePromptToHistory === 'function' && typeof getCurrentUser === 'function' && getCurrentUser()) {
+            // Collect all rendered outputs to save together
+            if (!window._tempOutputs) window._tempOutputs = [];
+            window._tempOutputs.push(res);
+        }
     }
 
     function runLegacyLogic(text, sessionSeed) {
